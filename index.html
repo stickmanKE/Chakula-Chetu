@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Chakula Chetu — Kenyan Baby Weaning Planner</title>
+<meta name="description" content="A weaning meal planner for Kenyan parents, caregivers and nurses — local foods, gentle on digestion, from first tastes to family table.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2B2620;
+    --cream:#FBF6EA;
+    --millet:#F4EDDB;
+    --sukuma:#2F4A3D;
+    --sukuma-light:#4C7059;
+    --ndengu:#7FA84F;
+    --sweet-potato:#E0762C;
+    --egg-yolk:#F0A93A;
+    --berry:#B85C6B;
+    --iron:#8A2E3A;
+    --vitc:#C9601F;
+    --line: rgba(43,38,32,0.12);
+    --mobile-bar-h: 64px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{ margin:0; background:var(--cream); color:var(--ink); font-family:'Work Sans', sans-serif; -webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.display{ font-family:'Fraunces', serif; font-weight:600; letter-spacing:-0.01em;}
+  .mono{ font-family:'JetBrains Mono', monospace; letter-spacing:0.02em;}
+
+  .weave{
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.09) 0 2px, transparent 2px 14px),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,0.07) 0 2px, transparent 2px 14px);
+  }
+
+  header.hero{ background:var(--sukuma); color:var(--cream); position:relative; overflow:hidden;}
+  header.hero .weave{ position:absolute; inset:0; opacity:0.6; pointer-events:none;}
+  .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--egg-yolk);}
+
+  nav.subnav{
+    position:sticky; top:0; z-index:40;
+    background:rgba(251,246,234,0.92);
+    backdrop-filter: blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.subnav a{
+    font-size:0.78rem; font-weight:600; color:var(--ink); opacity:0.65;
+    text-decoration:none; white-space:nowrap; padding:0.85rem 0.15rem; border-bottom:2px solid transparent;
+    display:flex; align-items:center; min-height:44px;
+  }
+  nav.subnav a:hover{ opacity:1; border-color:var(--sweet-potato);}
+
+  /* ---- Age stage cards (clickable "months") ---- */
+  /* Fluid: naturally drops to one column on narrow phones (~<340px per
+     card), 2 columns on typical phones, and explicit 5-across from
+     tablet width up — no hard breakpoint needed for the narrow case. */
+  .age-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(148px, 1fr)); gap:0.6rem;}
+  @media (min-width:640px){ .age-grid{ grid-template-columns:repeat(5,1fr);} }
+  .age-card{
+    border:1.5px solid rgba(251,246,234,0.25); background:rgba(251,246,234,0.06);
+    border-radius:14px; padding:0.85rem 0.7rem; cursor:pointer; text-align:left;
+    transition:all .18s ease; color:var(--cream); min-height:76px;
+  }
+  .age-card:hover{ border-color:rgba(251,246,234,0.5); background:rgba(251,246,234,0.12);}
+  .age-card:active{ transform:scale(0.98);}
+  .age-card.active{ background:var(--egg-yolk); border-color:var(--egg-yolk); color:var(--sukuma); box-shadow:0 6px 18px rgba(0,0,0,0.2);}
+  .age-card.active .range::before{ content:'✓ '; }
+  .age-card .range{ font-weight:700; font-size:0.92rem; display:block;}
+  .age-card .label{ font-size:0.72rem; opacity:0.8; margin-top:0.15rem; display:block;}
+
+  .btn-primary{
+    background:var(--sweet-potato); color:#fff; border:none; border-radius:12px; padding:0.85rem 1.5rem;
+    font-weight:600; font-size:0.95rem; cursor:pointer; box-shadow:0 6px 16px rgba(224,118,44,0.35);
+    transition:transform .15s ease, box-shadow .15s ease; min-height:44px;
+  }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 10px 22px rgba(224,118,44,0.42);}
+  .btn-primary:active{ transform:translateY(0);}
+  .btn-primary:disabled{ opacity:0.6; cursor:default; transform:none;}
+
+  .btn-ghost{
+    background:transparent; border:1.5px solid var(--line); color:var(--ink); border-radius:12px;
+    padding:0.65rem 1.1rem; font-weight:600; font-size:0.85rem; cursor:pointer; transition:all .15s ease;
+    display:inline-flex; align-items:center; gap:0.4rem; min-height:44px;
+  }
+  .btn-ghost:hover{ border-color:var(--sukuma); background:rgba(47,74,61,0.05);}
+
+  .btn-solid-light{
+    background:var(--sukuma); color:var(--cream); border:none; border-radius:12px;
+    padding:0.65rem 1.1rem; font-weight:600; font-size:0.85rem; cursor:pointer;
+    display:inline-flex; align-items:center; gap:0.4rem; transition:transform .15s ease; min-height:44px;
+  }
+  .btn-solid-light:hover{ transform:translateY(-1px);}
+
+  :focus-visible{ outline:2px solid var(--sweet-potato); outline-offset:2px; border-radius:4px;}
+  .age-card:focus-visible{ outline-offset:3px;}
+
+  .day-card{
+    background:#fff; border-radius:16px; border:1px solid var(--line); overflow:hidden;
+    opacity:0; transform:translateY(14px); animation:riseIn .45s ease forwards;
+    box-shadow:0 2px 10px rgba(43,38,32,0.05);
+  }
+  @keyframes riseIn{ to{opacity:1; transform:translateY(0);} }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.45;} }
+  .pulsing{ animation:pulse 1s ease infinite;}
+
+  .day-head{ background:var(--millet); padding:0.8rem 1rem; display:flex; align-items:baseline; justify-content:space-between; border-bottom:1px solid var(--line);}
+  .day-num{ font-family:'JetBrains Mono', monospace; font-size:0.7rem; color:var(--sukuma-light); font-weight:600;}
+  .meal-row{ padding:0.85rem 1rem; border-bottom:1px dashed var(--line);}
+  .meal-row:last-child{ border-bottom:none;}
+  .meal-label{ font-family:'JetBrains Mono', monospace; font-size:0.64rem; text-transform:uppercase; letter-spacing:0.1em; color:#9a9284; margin-bottom:0.3rem;}
+  .tag{ display:inline-block; font-size:0.64rem; font-weight:600; padding:0.18rem 0.5rem; border-radius:999px; margin-right:0.3rem; margin-top:0.35rem;}
+  .tag-carb{ background:#FDEBD3; color:#8A5316;}
+  .tag-protein{ background:#F7DEE1; color:#8A2E3A;}
+  .tag-veg{ background:#E4EEDA; color:#3B5A26;}
+  .tag-dairy{ background:#EAE3F4; color:#553B84;}
+  .tag-boost{ background:#FFF1D6; color:#9A5B00;}
+
+  .section-title{ font-family:'JetBrains Mono', monospace; font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--sukuma-light);}
+  .food-pill{ border:1px solid var(--line); border-radius:10px; padding:0.6rem 0.7rem; background:#fff; font-size:0.84rem;}
+  .food-pill .flags{ margin-top:0.3rem;}
+  .flag-dot{ display:inline-block; font-size:0.6rem; font-weight:700; padding:0.08rem 0.4rem; border-radius:999px; margin-right:0.25rem;}
+  .flag-iron{ background:#F7DEE1; color:var(--iron);}
+  .flag-vitc{ background:#FFE6D1; color:var(--vitc);}
+  .flag-vita{ background:#FDF0C8; color:#8A6300;}
+  .flag-fat{ background:#EAE3F4; color:#553B84;}
+
+  ::selection{ background:var(--egg-yolk); color:var(--ink);}
+
+  @media print{
+    header.hero, nav.subnav, .no-print{ display:none !important;}
+    body{ background:#fff; padding-bottom:0 !important;}
+    .day-card{ break-inside:avoid; box-shadow:none;}
+  }
+
+  .cue-list li, .rule-list li{ padding-left:1.4rem; position:relative; margin-bottom:0.55rem; line-height:1.5;}
+  .cue-list li::before{ content:'✓'; position:absolute; left:0; color:var(--ndengu); font-weight:700;}
+  .rule-list li::before{ content:'•'; position:absolute; left:0; color:var(--sweet-potato); font-weight:700;}
+
+  .watch-card{ border-radius:16px; padding:1.1rem; border:1px solid var(--line); background:#fff;}
+  .watch-card .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:0.5rem;}
+
+  details.faq{ border-bottom:1px solid var(--line); padding:1rem 0;}
+  details.faq summary{ cursor:pointer; font-weight:600; list-style:none; display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;}
+  details.faq summary::-webkit-details-marker{ display:none;}
+  details.faq .faq-q{ flex:1; min-width:0; overflow-wrap:break-word; line-height:1.4;}
+  details.faq summary::after{ content:'+'; font-size:1.3rem; color:var(--sweet-potato); font-weight:400; flex-shrink:0; width:1.5rem; text-align:center;}
+  details.faq[open] summary::after{ content:'–';}
+  details.faq p{ margin-top:0.7rem; font-size:0.9rem; opacity:0.85; line-height:1.6;}
+
+  /* ---- Saved plans ---- */
+  .saved-card{ border:1px solid var(--line); border-radius:14px; padding:0.9rem 1rem; background:#fff; display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap;}
+  .toast{
+    position:fixed; left:50%; bottom:calc(var(--mobile-bar-h) + 16px); transform:translateX(-50%) translateY(20px);
+    background:var(--sukuma); color:var(--cream); padding:0.7rem 1.2rem; border-radius:999px; font-size:0.85rem; font-weight:600;
+    box-shadow:0 8px 24px rgba(0,0,0,0.25); z-index:80; opacity:0; pointer-events:none; transition:all .25s ease;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0);}
+  @media (min-width:768px){ .toast{ bottom:24px; } }
+
+  /* ---- Sticky mobile action bar ---- */
+  .mobile-bar{
+    display:none; position:fixed; left:0; right:0; bottom:0; z-index:50;
+    background:rgba(251,246,234,0.96); backdrop-filter:blur(8px); border-top:1px solid var(--line);
+    padding:8px max(12px, env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-right));
+    gap:8px;
+  }
+  .mobile-bar button{
+    flex:1; border:none; border-radius:12px; font-weight:700; font-size:0.72rem;
+    padding:0.55rem 0.3rem; display:flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  @media (max-width:767px){
+    .mobile-bar{ display:flex;}
+    body{ padding-bottom: calc(var(--mobile-bar-h) + env(safe-area-inset-bottom, 0px)); }
+  }
+
+  /* =================================================================
+     UTILITY LAYER
+     The markup was written assuming Tailwind was loaded — it wasn't.
+     These are real definitions for the exact utility classes used
+     throughout this file, so every px, gap, grid-cols etc. utility that
+     was silently doing nothing now actually applies.
+  ================================================================= */
+  :root{ --page-gutter: clamp(16px, 4vw, 24px); }
+
+  .relative{ position:relative;}
+  .inline-block{ display:inline-block;}
+  .text-center{ text-align:center;}
+  .overflow-x-auto{ overflow-x:auto;}
+  .bg-white{ background:#fff;}
+  .border{ border:1px solid var(--line);}
+  .border-t{ border-top:1px solid var(--line);}
+  .shadow-sm{ box-shadow:0 1px 2px rgba(0,0,0,0.05);}
+  .rounded-xl{ border-radius:0.75rem;}
+  .rounded-2xl{ border-radius:1rem;}
+  .scroll-mt-16{ scroll-margin-top:4rem;}
+  .font-medium{ font-weight:500;}
+  .font-semibold{ font-weight:600;}
+  .leading-tight{ line-height:1.25;}
+  .leading-snug{ line-height:1.375;}
+  .leading-relaxed{ line-height:1.625;}
+
+  .max-w-5xl{ max-width:64rem;}
+  .max-w-md{ max-width:28rem;}
+  .max-w-xl{ max-width:36rem;}
+  .mx-auto{ margin-left:auto; margin-right:auto;}
+
+  .px-5{ padding-left:var(--page-gutter); padding-right:var(--page-gutter);}
+  .pt-8{ padding-top:2rem;} .pt-10{ padding-top:2.5rem;}
+  .pb-12{ padding-bottom:3rem;} .pb-16{ padding-bottom:4rem;}
+  .p-3{ padding:0.75rem;} .p-4{ padding:1rem;} .p-5{ padding:1.25rem;} .p-6{ padding:1.5rem;}
+
+  .mt-0\.5{ margin-top:0.125rem;} .mt-1{ margin-top:0.25rem;} .mt-2{ margin-top:0.5rem;}
+  .mt-3{ margin-top:0.75rem;} .mt-5{ margin-top:1.25rem;} .mt-6{ margin-top:1.5rem;}
+  .mt-8{ margin-top:2rem;} .mt-14{ margin-top:3.5rem;}
+  .mb-1{ margin-bottom:0.25rem;} .mb-2{ margin-bottom:0.5rem;} .mb-3{ margin-bottom:0.75rem;}
+  .mb-4{ margin-bottom:1rem;} .mb-5{ margin-bottom:1.25rem;} .mb-6{ margin-bottom:1.5rem;} .mb-7{ margin-bottom:1.75rem;}
+  .my-0\.5{ margin-top:0.125rem; margin-bottom:0.125rem;}
+
+  .gap-2{ gap:0.5rem;} .gap-3{ gap:0.75rem;} .gap-4{ gap:1rem;} .gap-5{ gap:1.25rem;} .gap-6{ gap:1.5rem;}
+
+  .text-xs{ font-size:0.75rem; line-height:1rem;}
+  .text-sm{ font-size:0.875rem; line-height:1.25rem;}
+  .text-lg{ font-size:1.125rem; line-height:1.75rem;}
+  .text-xl{ font-size:1.25rem; line-height:1.75rem;}
+  .text-2xl{ font-size:1.5rem; line-height:2rem;}
+  .text-3xl{ font-size:1.875rem; line-height:2.25rem;}
+
+  .opacity-40{ opacity:0.4;} .opacity-50{ opacity:0.5;} .opacity-60{ opacity:0.6;}
+  .opacity-70{ opacity:0.7;} .opacity-75{ opacity:0.75;} .opacity-80{ opacity:0.8;}
+  .opacity-85{ opacity:0.85;} .opacity-90{ opacity:0.9;} .opacity-95{ opacity:0.95;}
+
+  .grid{ display:grid;}
+  .flex{ display:flex;}
+  .flex-col{ flex-direction:column;}
+  .flex-wrap{ flex-wrap:wrap;}
+  .items-center{ align-items:center;}
+  .items-start{ align-items:flex-start;}
+  .justify-between{ justify-content:space-between;}
+  .space-y-2 > * + *{ margin-top:0.5rem;}
+
+  @media (min-width:640px){
+    .sm\:px-6{ padding-left:var(--page-gutter); padding-right:var(--page-gutter);}
+    .sm\:pt-14{ padding-top:3.5rem;}
+    .sm\:pb-16{ padding-bottom:4rem;}
+    .sm\:p-5{ padding:1.25rem;} .sm\:p-8{ padding:2rem;}
+    .sm\:mt-6{ margin-top:1.5rem;} .sm\:mt-8{ margin-top:2rem;}
+    .sm\:mt-10{ margin-top:2.5rem;} .sm\:mt-16{ margin-top:4rem;}
+    .sm\:gap-6{ gap:1.5rem;}
+    .sm\:grid-cols-2{ grid-template-columns:repeat(2,minmax(0,1fr));}
+    .sm\:grid-cols-3{ grid-template-columns:repeat(3,minmax(0,1fr));}
+    .sm\:text-4xl{ font-size:2.25rem; line-height:2.5rem;}
+    .sm\:text-base{ font-size:1rem; line-height:1.5rem;}
+    .sm\:text-lg{ font-size:1.125rem; line-height:1.75rem;}
+  }
+  @media (min-width:768px){
+    .md\:flex-row{ flex-direction:row;}
+    .md\:items-end{ align-items:flex-end;}
+    .md\:justify-between{ justify-content:space-between;}
+    .md\:grid-cols-2{ grid-template-columns:repeat(2,minmax(0,1fr));}
+    .md\:text-3xl{ font-size:1.875rem; line-height:2.25rem;}
+    .md\:text-5xl{ font-size:3rem; line-height:1;}
+    .md\:text-lg{ font-size:1.125rem; line-height:1.75rem;}
+  }
+  @media (min-width:1024px){
+    .lg\:grid-cols-3{ grid-template-columns:repeat(3,minmax(0,1fr));}
+    .lg\:grid-cols-4{ grid-template-columns:repeat(4,minmax(0,1fr));}
+  }
+
+  /* Golden-strip cards (the ones in the screenshot) get explicit,
+     always-on padding rather than relying on a utility class alone */
+  .golden-card{
+    padding:14px 16px;
+    border-radius:12px;
+    background:var(--millet);
+  }
+  @media (min-width:640px){ .golden-card{ padding:18px 20px;} }
+
+  /* Sub-nav: inner padding + no visible scrollbar on the horizontal scroll */
+  .subnav-inner{
+    padding-left:var(--page-gutter); padding-right:var(--page-gutter);
+    display:flex; gap:1.25rem; overflow-x:auto; scrollbar-width:none;
+  }
+  .subnav-inner::-webkit-scrollbar{ display:none;}
+  nav.subnav{ position:sticky; top:0; z-index:40; -webkit-mask-image:linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);}
+
+  /* =================================================================
+     RESPONSIVENESS & OVERFLOW SAFETY (mobile UX pass)
+  ================================================================= */
+  html{ overflow-x:hidden;}
+  body{ overflow-x:hidden;}
+  .grid > *, .flex > *{ min-width:0;}
+  h1,h2,h3,h4,p,a,button,summary,li,span,div{ overflow-wrap:break-word;}
+
+  .hero-title{
+    font-size:clamp(1.85rem, 1.1rem + 4.2vw, 3.25rem);
+    line-height:1.12;
+    margin-bottom:1rem;
+    max-width:640px;
+  }
+  .hero-sub{
+    font-size:clamp(0.9rem, 0.8rem + 0.5vw, 1.125rem);
+    line-height:1.55;
+    max-width:560px;
+  }
+
+  /* =================================================================
+     FEEDBACK & REVIEWS
+  ================================================================= */
+
+  /* Post-generate "how useful was this plan" strip */
+  .fb-strip{
+    border:1px solid var(--line); border-radius:16px; padding:16px;
+    background:#fff; margin-top:1.5rem;
+  }
+  @media (min-width:640px){ .fb-strip{ padding:20px;} }
+  .fb-choice-row{ display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;}
+  .fb-choice{
+    border:1.5px solid var(--line); background:#fff; border-radius:999px;
+    padding:0.55rem 1rem; font-size:0.85rem; font-weight:600; cursor:pointer;
+    transition:all .15s ease; min-height:44px;
+  }
+  .fb-choice:hover{ border-color:var(--sukuma);}
+  .fb-choice.picked{ background:var(--sukuma); border-color:var(--sukuma); color:var(--cream);}
+  .fb-followup textarea{
+    width:100%; border:1.5px solid var(--line); border-radius:12px; padding:0.7rem 0.85rem;
+    font-family:inherit; font-size:0.85rem; resize:vertical; min-height:70px; margin-top:0.75rem;
+  }
+  .fb-thanks{ display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; font-weight:600; color:var(--sukuma-light);}
+
+  /* "Was this helpful?" widget for educational sections */
+  .helpful-widget{
+    display:flex; align-items:center; flex-wrap:wrap; gap:0.6rem;
+    border-top:1px dashed var(--line); margin-top:1.5rem; padding-top:1rem;
+    font-size:0.85rem;
+  }
+  .helpful-widget button{
+    border:1.5px solid var(--line); background:#fff; border-radius:999px;
+    padding:0.4rem 0.85rem; font-size:0.8rem; font-weight:600; cursor:pointer; min-height:38px;
+  }
+  .helpful-widget button:hover{ border-color:var(--sukuma);}
+  .helpful-widget button.picked{ background:var(--sukuma); color:var(--cream); border-color:var(--sukuma);}
+
+  /* Floating feedback button */
+  .fab-feedback{
+    position:fixed; right:16px; bottom:calc(var(--mobile-bar-h) + 16px); z-index:55;
+    background:var(--sukuma); color:var(--cream); border:none; border-radius:999px;
+    padding:0.8rem 1.1rem; font-weight:700; font-size:0.82rem; cursor:pointer;
+    box-shadow:0 8px 20px rgba(0,0,0,0.25); display:flex; align-items:center; gap:0.4rem;
+    min-height:44px;
+  }
+  @media (min-width:768px){ .fab-feedback{ bottom:24px;} }
+  .fab-feedback:hover{ transform:translateY(-2px);}
+
+  /* Modal (feedback form) */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(43,38,32,0.45); z-index:90;
+    align-items:flex-end; justify-content:center; padding:0;
+  }
+  .modal-overlay.open{ display:flex;}
+  .modal-sheet{
+    background:var(--cream); width:100%; max-width:520px; border-radius:20px 20px 0 0;
+    padding:20px var(--page-gutter) calc(20px + env(safe-area-inset-bottom, 0px));
+    max-height:88vh; overflow-y:auto;
+  }
+  @media (min-width:768px){
+    .modal-overlay{ align-items:center; padding:24px;}
+    .modal-sheet{ border-radius:20px; max-height:80vh;}
+  }
+  .modal-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1rem;}
+  .modal-close{ background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--ink); opacity:0.6; line-height:1; padding:0.4rem; min-height:44px; min-width:44px;}
+  .modal-close:hover{ opacity:1;}
+  .field-label{ font-size:0.8rem; font-weight:600; margin-bottom:0.4rem; display:block;}
+  .field-hint{ font-size:0.75rem; opacity:0.6; margin-bottom:0.5rem;}
+  .chip-row{ display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.1rem;}
+  .chip-choice{
+    border:1.5px solid var(--line); background:#fff; border-radius:999px;
+    padding:0.5rem 0.9rem; font-size:0.82rem; font-weight:600; cursor:pointer; min-height:40px;
+  }
+  .chip-choice.picked{ background:var(--egg-yolk); border-color:var(--egg-yolk); color:var(--sukuma);}
+  textarea.form-input, input.form-input, select.form-input{
+    width:100%; border:1.5px solid var(--line); border-radius:12px; padding:0.7rem 0.85rem;
+    font-family:inherit; font-size:0.88rem; margin-bottom:1.1rem; background:#fff;
+  }
+  textarea.form-input{ resize:vertical; min-height:80px;}
+  .consent-row{ display:flex; align-items:flex-start; gap:0.6rem; font-size:0.8rem; margin-bottom:1.2rem; line-height:1.5;}
+  .consent-row input{ margin-top:0.2rem; width:18px; height:18px; flex-shrink:0;}
+
+  /* Star rating */
+  .star-row{ display:flex; gap:0.3rem; margin-bottom:1.1rem;}
+  .star-btn{ background:none; border:none; font-size:1.7rem; cursor:pointer; padding:0.2rem; line-height:1; color:var(--line); min-height:44px; min-width:44px;}
+  .star-btn.filled{ color:var(--egg-yolk);}
+
+  /* Review cards */
+  .review-card{ border:1px solid var(--line); border-radius:16px; padding:16px; background:#fff;}
+  @media (min-width:640px){ .review-card{ padding:20px;} }
+  .review-stars{ color:var(--egg-yolk); letter-spacing:0.1em; font-size:0.95rem; margin-bottom:0.5rem;}
+  .review-text{ font-size:0.9rem; line-height:1.55; margin-bottom:0.75rem;}
+  .review-meta{ font-size:0.78rem; opacity:0.65;}
+  .review-used-tag{
+    display:inline-block; margin-top:0.5rem; font-size:0.7rem; font-weight:600;
+    background:var(--millet); color:var(--sukuma-light); padding:0.25rem 0.6rem; border-radius:999px;
+  }
+
+  /* =================================================================
+     ABOUT / SUPPORT (the personal note + donate section)
+  ================================================================= */
+  .about-card{
+    position:relative; overflow:hidden; border-radius:20px;
+    background:var(--sukuma); color:var(--cream);
+    padding:28px var(--page-gutter);
+  }
+  @media (min-width:640px){ .about-card{ padding:36px 40px;} }
+  .about-grid{ position:relative; display:flex; flex-direction:column; gap:1.75rem;}
+  @media (min-width:768px){ .about-grid{ flex-direction:row; align-items:stretch; gap:2.25rem;} }
+  .about-inner{ min-width:0;}
+  @media (min-width:768px){ .about-inner{ flex:1.35;} }
+  .about-avatar{
+    width:52px; height:52px; border-radius:50%;
+    background:var(--egg-yolk); color:var(--sukuma);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif; font-weight:700; font-size:1.1rem;
+    margin-bottom:1rem; box-shadow:0 4px 14px rgba(0,0,0,0.25);
+  }
+  .about-text{
+    font-size:0.95rem; line-height:1.7; opacity:0.92; max-width:640px; margin-bottom:1rem;
+  }
+  .about-text:last-child{ margin-bottom:0;}
+  .about-photo-wrap{
+    border-radius:16px; overflow:hidden; flex-shrink:0; position:relative;
+    height:260px; box-shadow:0 10px 28px rgba(0,0,0,0.28);
+  }
+  @media (min-width:768px){ .about-photo-wrap{ flex:1; height:auto; min-width:220px; max-width:320px;} }
+  .about-photo{ width:100%; height:100%; object-fit:cover; display:block;}
+
+  .support-card{
+    border:1px solid var(--line); border-radius:20px; background:#fff;
+    padding:22px var(--page-gutter);
+  }
+  @media (min-width:640px){ .support-card{ padding:26px;} }
+  .support-icon{
+    width:42px; height:42px; border-radius:12px; background:var(--millet);
+    display:flex; align-items:center; justify-content:center; font-size:1.3rem; margin-bottom:0.85rem;
+  }
+  .mpesa-row{
+    display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap;
+    background:var(--millet); border-radius:14px; padding:0.85rem 1rem;
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="weave"></div>
+  <div class="max-w-5xl mx-auto px-5 sm:px-6 pt-10 sm:pt-14 pb-12 sm:pb-16 relative">
+    <p class="eyebrow mb-3">Chakula Chetu · weaning, the Kenyan way</p>
+    <h1 class="hero-title">Meal plans your baby's stomach will thank you for.</h1>
+    <p class="hero-sub opacity-90 mb-7" style="font-weight:400;">
+      Built for mums, dads, grandmothers and the nurses looking after little ones. Tap baby's age, get a week of local meals — paired the way a nutritionist would.
+    </p>
+    <p class="mono text-xs opacity-70 mb-2">TAP AN AGE TO START</p>
+    <div class="age-grid" id="age-chips"></div>
+  </div>
+</header>
+
+<nav class="subnav no-print">
+  <div class="max-w-5xl mx-auto subnav-inner">
+    <a href="#planner">Planner</a>
+    <a href="#saved">Saved plans</a>
+    <a href="#pairing">Smart pairing</a>
+    <a href="#library">Food library</a>
+    <a href="#cues">Hunger cues</a>
+    <a href="#watch">Growth watch</a>
+    <a href="#guidance">Golden rules</a>
+    <a href="#reviews">Reviews</a>
+    <a href="#about">About</a>
+    <a href="#faq">FAQ</a>
+  </div>
+</nav>
+
+<main class="max-w-5xl mx-auto px-5 sm:px-6 pb-16">
+
+  <!-- Generator panel -->
+  <section id="planner" class="bg-white rounded-2xl border shadow-sm p-5 sm:p-8 mt-6 sm:mt-8 scroll-mt-16" style="border-color:var(--line);">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-5">
+      <div>
+        <p class="section-title mb-1" id="stage-label">Stage · First Tastes</p>
+        <h2 class="text-2xl md:text-3xl" id="stage-title">5–6 months</h2>
+        <p class="text-sm mt-1 opacity-70 max-w-md" id="stage-desc"></p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button class="btn-primary" id="generate-btn">Generate my week →</button>
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-3 gap-3 mt-6" id="golden-strip"></div>
+  </section>
+
+  <!-- Digestion tip -->
+  <section class="mt-5 sm:mt-6 rounded-2xl p-4 sm:p-5 flex items-start gap-4" style="background:var(--millet); border:1px solid var(--line);">
+    <div class="text-2xl">🌿</div>
+    <div>
+      <p class="section-title mb-1">Digestion tip</p>
+      <p class="text-sm leading-relaxed" id="digestion-tip" style="max-width:640px;"></p>
+    </div>
+  </section>
+
+  <!-- Plan grid -->
+  <section class="mt-8 sm:mt-10">
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+      <h3 class="text-xl">This week's plan</h3>
+      <div class="flex flex-wrap gap-2 no-print">
+        <button class="btn-ghost" id="save-btn">💾 Save plan</button>
+        <button class="btn-ghost" id="calendar-btn">📅 Add to calendar</button>
+        <button class="btn-ghost" id="whatsapp-btn">💬 WhatsApp</button>
+        <button class="btn-ghost" id="copy-btn">Copy text</button>
+        <button class="btn-ghost" id="print-btn">Print / PDF</button>
+      </div>
+    </div>
+    <div id="plan-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <div id="plan-feedback"></div>
+  </section>
+
+  <!-- Saved plans -->
+  <section id="saved" class="mt-14 sm:mt-16 scroll-mt-16">
+    <p class="eyebrow mb-2" style="color:var(--sweet-potato);">On this device</p>
+    <h3 class="text-xl mb-1">My saved plans</h3>
+    <p class="text-sm opacity-70 mb-4" id="saved-empty-note">Saved plans live in this browser, so they're here whenever you come back on this phone or computer.</p>
+    <div class="space-y-2" id="saved-list"></div>
+  </section>
+
+  <!-- Smart pairing explainer -->
+  <section id="pairing" class="mt-14 sm:mt-16 scroll-mt-16">
+    <p class="eyebrow mb-2" style="color:var(--sweet-potato);">The science, simply</p>
+    <h3 class="text-2xl mb-2">Why some foods are paired on purpose</h3>
+    <p class="text-sm opacity-70 mb-6 max-w-xl">Every lunch and dinner in the planner quietly follows these two rules, and tracks iron-rich foods across the week so they don't get crowded out.</p>
+    <div class="grid md:grid-cols-2 gap-5">
+      <div class="rounded-2xl p-6 border" style="border-color:var(--line); background:#fff;">
+        <span class="flag-dot flag-iron mb-3 inline-block">IRON + VITAMIN C</span>
+        <h4 class="text-lg mb-2">Vitamin C helps iron absorb</h4>
+        <p class="text-sm opacity-80 leading-relaxed">Iron-rich foods — egg yolk, liver, minced meat, ndengu, lentils, beans — are absorbed far better alongside a vitamin-C food in the same meal, like spinach, tomato, or sukuma wiki. The planner aims for iron at lunch on most days of the week, not just whenever it happens to land.</p>
+      </div>
+      <div class="rounded-2xl p-6 border" style="border-color:var(--line); background:#fff;">
+        <span class="flag-dot flag-fat mb-3 inline-block">FAT + VITAMIN A</span>
+        <h4 class="text-lg mb-2">Fat helps vitamin A absorb</h4>
+        <p class="text-sm opacity-80 leading-relaxed">Vitamin-A foods — pumpkin, butternut, carrot, sweet potato — are fat-soluble, meaning a spoon of avocado, natural yogurt or a little groundnut paste alongside them helps baby actually absorb the vitamin, not just taste it.</p>
+      </div>
+    </div>
+    <div id="helpful-pairing"></div>
+  </section>
+  <section id="library" class="mt-14 sm:mt-16 scroll-mt-16">
+    <h3 class="text-xl mb-1">Foods for this stage</h3>
+    <p class="text-sm opacity-70 mb-5">Grouped the way a nutritionist groups them. Swap freely within a group — <span class="flag-dot flag-iron">IRON</span><span class="flag-dot flag-vitc">VIT C</span><span class="flag-dot flag-vita">VIT A</span><span class="flag-dot flag-fat">FAT</span> show what each food boosts.</p>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6" id="food-library"></div>
+    <div id="helpful-library"></div>
+  </section>
+
+  <!-- Hunger cues -->
+  <section id="cues" class="mt-14 sm:mt-16 scroll-mt-16 grid md:grid-cols-2 gap-6">
+    <div class="rounded-2xl p-6 border" style="border-color:var(--line); background:#fff;">
+      <p class="eyebrow mb-2" style="color:var(--sweet-potato);">Responsive feeding</p>
+      <h3 class="text-xl mb-3">Signs baby is hungry</h3>
+      <ul class="text-sm cue-list opacity-90">
+        <li>Opens mouth or moves toward the spoon</li>
+        <li>Smacks lips, sucks on fists or fingers</li>
+        <li>Gets alert or excited at the sight of food</li>
+        <li>Reaches or points at food (older babies)</li>
+        <li>Eats willingly and happily</li>
+      </ul>
+      <p class="text-xs opacity-60 mt-3">Feed only when baby shows these cues — it gives time to digest and keeps mealtimes pressure-free.</p>
+    </div>
+    <div class="rounded-2xl p-6 border" style="border-color:var(--line); background:#fff;">
+      <p class="eyebrow mb-2" style="color:var(--sweet-potato);">Responsive feeding</p>
+      <h3 class="text-xl mb-3">Signs baby is full</h3>
+      <ul class="text-sm cue-list opacity-90">
+        <li>Turns head away or closes mouth</li>
+        <li>Pushes the spoon or bowl away</li>
+        <li>Slows down or stops eating willingly</li>
+        <li>Plays with food instead of eating it</li>
+        <li>Becomes fussy or distracted</li>
+      </ul>
+      <p class="text-xs opacity-60 mt-3">Never force the last spoonful — babies are good at regulating their own appetite.</p>
+    </div>
+  </section>
+
+  <!-- Growth / nutrition watch -->
+  <section id="watch" class="mt-14 sm:mt-16 scroll-mt-16">
+    <p class="eyebrow mb-2" style="color:var(--sweet-potato);">For caregivers & nurses</p>
+    <h3 class="text-2xl mb-2">What poor nutrition can look like</h3>
+    <p class="text-sm opacity-70 mb-6 max-w-xl">General education, not a diagnosis — if you notice any of these, it's worth a clinic visit rather than waiting.</p>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" id="watch-grid"></div>
+  </section>
+
+  <!-- Guidance -->
+  <section id="guidance" class="mt-14 sm:mt-16 scroll-mt-16 grid md:grid-cols-2 gap-6">
+    <div class="rounded-2xl p-6" style="background:var(--sukuma); color:var(--cream);">
+      <p class="eyebrow mb-2">Golden rules</p>
+      <h3 class="text-xl mb-3">Introducing new foods safely</h3>
+      <ul class="text-sm rule-list opacity-95">
+        <li>Start with 1–2 tablespoons, once a day, for the first 2–3 days.</li>
+        <li>Introduce one new food at a time, and wait 2–3 days before the next — this makes it easy to spot any reaction.</li>
+        <li>From 6 months, breastmilk or formula alone is no longer enough iron — prioritise egg yolk, liver, minced meat, and ndengu several times a week.</li>
+        <li>No added salt or sugar before 12 months; herbs like dhania work well instead.</li>
+        <li>Introduce plain water slowly — about 20ml per meal — alongside solids.</li>
+        <li>Give honey only after 12 months, when the botulism risk from honey has passed.</li>
+        <li>Food before 1 is mostly for learning, not quantity — breastmilk or formula still does the heavy lifting.</li>
+        <li>Fussy about a food? Keep offering it — it can take 8–10 tries before it's accepted.</li>
+      </ul>
+    </div>
+    <div class="rounded-2xl p-6 border" style="border-color:var(--line);">
+      <p class="eyebrow mb-2" style="color:var(--sweet-potato);">Golden rules</p>
+      <h3 class="text-xl mb-3">If baby's tummy is unsettled</h3>
+      <ul class="text-sm rule-list opacity-85">
+        <li><strong>Constipated?</strong> Mashed banana + avocado with a spoon of natural yogurt, plain wimbi porridge, and butternut can help gently.</li>
+        <li><strong>Loose stools?</strong> Ripe banana, plain rice, and well-cooked carrot are gentle and binding.</li>
+        <li><strong>Windy or colicky?</strong> A pinch of dhania or cumin in cooking can help; avoid too much cabbage or dried beans at once.</li>
+        <li>Always cook food until soft, cool before serving, and keep portions small — baby's stomach is roughly the size of their fist.</li>
+        <li>Use plain, unsweetened natural yogurt only — avoid flavoured or sugary versions, and introduce it gradually while watching for reactions.</li>
+        <li>This planner offers general, non-clinical guidance — check with your paediatrician or clinic for anything persistent, or before introducing foods if baby has a known allergy risk.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Reviews -->
+  <section id="reviews" class="mt-14 sm:mt-16 scroll-mt-16">
+    <p class="eyebrow mb-2" style="color:var(--sweet-potato);">What parents & caregivers say</p>
+    <h3 class="text-2xl mb-2">How Chakula Chetu helps families</h3>
+    <p class="text-sm opacity-70 mb-6 max-w-xl">Reviews only appear here if the person who wrote them chose to share it publicly. This is feedback about the app, not medical advice — for anything about your baby's health, talk to your paediatrician or clinic.</p>
+
+    <div id="reviews-list" class="grid sm:grid-cols-2 gap-4 mb-8"></div>
+
+    <div class="rounded-2xl border p-5 sm:p-6" style="border-color:var(--line); background:#fff;">
+      <h4 class="text-lg mb-1">How has Chakula Chetu helped you when planning or feeding your baby?</h4>
+      <p class="text-sm opacity-70 mb-4">Takes about a minute. Every field except your review is optional.</p>
+
+      <label class="field-label">Your rating</label>
+      <div class="star-row" id="review-stars"></div>
+
+      <label class="field-label" for="review-text">Your review</label>
+      <textarea class="form-input" id="review-text" placeholder="e.g. Made planning our 7-month-old's week so much easier, especially the iron pairing tips..."></textarea>
+
+      <label class="field-label">What's been most useful?</label>
+      <select class="form-input" id="review-useful">
+        <option value="">Prefer not to say</option>
+        <option value="The weekly planner">The weekly planner</option>
+        <option value="The food library">The food library</option>
+        <option value="Smart pairing tips">Smart pairing tips</option>
+        <option value="Hunger cues">Hunger cues</option>
+        <option value="Golden rules / guidance">Golden rules / guidance</option>
+      </select>
+
+      <label class="field-label">Your name (optional, shown publicly if you consent below)</label>
+      <input class="form-input" id="review-name" type="text" placeholder="e.g. Amina, or leave blank to stay anonymous" maxlength="40">
+
+      <label class="field-label">You are a...</label>
+      <select class="form-input" id="review-role">
+        <option value="">Prefer not to say</option>
+        <option value="Parent">Parent</option>
+        <option value="Grandparent">Grandparent</option>
+        <option value="Nurse">Nurse</option>
+        <option value="Nanny/Caregiver">Nanny or caregiver</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <label class="field-label">County (optional)</label>
+      <input class="form-input" id="review-county" type="text" placeholder="e.g. Mombasa" maxlength="30">
+
+      <div class="consent-row">
+        <input type="checkbox" id="review-consent">
+        <label for="review-consent">I'm happy for this review (rating, text, and whatever name/role/county I've filled in) to be shown publicly in the reviews list above. I understand I should not include my child's name or any health details.</label>
+      </div>
+
+      <button class="btn-primary" id="review-submit" style="width:100%; justify-content:center; display:flex;">Share your review</button>
+      <p class="text-xs opacity-60 mt-3" id="review-status"></p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="mt-14 sm:mt-16 scroll-mt-16">
+    <h3 class="text-2xl mb-4">Common questions</h3>
+    <div id="faq-list"></div>
+  </section>
+
+  <!-- About / Support -->
+  <section id="about" class="mt-14 sm:mt-16 scroll-mt-16">
+    <div class="about-card">
+      <div class="weave" style="position:absolute; inset:0; opacity:0.45; pointer-events:none;"></div>
+      <div class="about-grid">
+        <div class="about-inner">
+          <div class="about-avatar" aria-hidden="true">MM</div>
+          <p class="eyebrow mb-2">The story behind Chakula Chetu</p>
+          <h3 class="text-2xl md:text-3xl mb-4">Hi, I'm Mark Mgharo 👋</h3>
+          <p class="about-text">
+            I'm a tech enthusiast, and I built Chakula Chetu after a year of trial and error trying to figure out what actually worked for my own baby — who just turned one. So much of what I found online wasn't written for Kenyan kitchens, Kenyan foods, or the questions a Kenyan parent actually has at 6pm with a hungry baby and half an avocado.
+          </p>
+          <p class="about-text">
+            This is a passion project, built in the hope that it saves another parent some of the guesswork it took me a year to work through. If something here helped you, or something's missing, I'd genuinely love to hear from you.
+          </p>
+        </div>
+        <div class="about-photo-wrap">
+          <img class="about-photo" src="images/mark-and-baby.jpg" alt="Mark holding his daughter on a beach in Kenya" loading="lazy">
+        </div>
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-4 mt-5">
+      <div class="support-card">
+        <div class="support-icon">💚</div>
+        <p class="font-semibold mb-1">Support the project</p>
+        <p class="text-sm opacity-70 mb-4">Chakula Chetu is free and independently built. If it's helped your family, a donation helps keep it running and fund new features.</p>
+        <div class="mpesa-row">
+          <div>
+            <p class="mono text-xs opacity-60">M-PESA</p>
+            <p class="font-semibold" style="font-size:1.05rem;">+254 741 392 650</p>
+          </div>
+          <button class="btn-ghost" id="copy-mpesa-btn">Copy number</button>
+        </div>
+      </div>
+      <div class="support-card">
+        <div class="support-icon">💬</div>
+        <p class="font-semibold mb-1">Got ideas or feedback?</p>
+        <p class="text-sm opacity-70 mb-4">I read everything that comes in through the feedback button — but if you'd rather just chat, message me directly on WhatsApp about what you'd like to see next.</p>
+        <a class="btn-solid-light" href="https://wa.me/254741392650?text=Hi%20Mark!%20I've%20been%20using%20Chakula%20Chetu%20and%20wanted%20to%20say..." target="_blank" rel="noopener" style="text-decoration:none; justify-content:center; display:inline-flex; width:100%;">
+          Message Mark on WhatsApp
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="mt-14 sm:mt-16 pt-8 border-t text-center text-xs opacity-50" style="border-color:var(--line);">
+    Chakula Chetu — built for Kenyan families and the caregivers who feed them. General guidance only; always follow your clinic's advice for your baby.
+  </footer>
+</main>
+
+<!-- Sticky mobile action bar -->
+<div class="mobile-bar no-print" id="mobile-bar">
+  <button id="mb-generate" style="background:var(--sweet-potato); color:#fff;">
+    <span style="font-size:1rem;">✨</span><span>Generate</span>
+  </button>
+  <button id="mb-save" style="background:var(--sukuma); color:var(--cream);">
+    <span style="font-size:1rem;">💾</span><span>Save</span>
+  </button>
+  <button id="mb-calendar" style="background:var(--millet); color:var(--ink);">
+    <span style="font-size:1rem;">📅</span><span>Calendar</span>
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<button class="fab-feedback no-print" id="fab-feedback" aria-label="Give feedback about Chakula Chetu">
+  💬 <span>Feedback</span>
+</button>
+
+<div class="modal-overlay" id="feedback-modal">
+  <div class="modal-sheet">
+    <div class="modal-head">
+      <div>
+        <h3 class="text-xl">How are we doing?</h3>
+        <p class="text-sm opacity-70 mt-1">Short and anonymous — helps us make Chakula Chetu more useful.</p>
+      </div>
+      <button class="modal-close" id="modal-close-btn" aria-label="Close feedback form">✕</button>
+    </div>
+
+    <label class="field-label">Who's using the planner? (optional)</label>
+    <div class="chip-row" id="fb-role-chips">
+      <button class="chip-choice" data-role="Parent">Parent</button>
+      <button class="chip-choice" data-role="Grandparent">Grandparent</button>
+      <button class="chip-choice" data-role="Nurse">Nurse</button>
+      <button class="chip-choice" data-role="Nanny/Caregiver">Nanny/Caregiver</button>
+      <button class="chip-choice" data-role="Other">Other</button>
+    </div>
+
+    <label class="field-label">How are we doing overall?</label>
+    <div class="chip-row" id="fb-mood-chips">
+      <button class="chip-choice" data-mood="Love it">😍 Love it</button>
+      <button class="chip-choice" data-mood="It's useful">🙂 It's useful</button>
+      <button class="chip-choice" data-mood="It's okay">😐 It's okay</button>
+      <button class="chip-choice" data-mood="Needs work">😕 Needs work</button>
+    </div>
+
+    <label class="field-label" for="fb-improve">What should we improve?</label>
+    <textarea class="form-input" id="fb-improve" placeholder="Optional — anything that would make this more useful to you"></textarea>
+
+    <label class="field-label" for="fb-email">Email (optional, only if you'd like a reply)</label>
+    <input class="form-input" id="fb-email" type="email" placeholder="you@example.com">
+
+    <p class="field-hint" style="margin-bottom:1rem;">This is feedback about the app itself, not medical advice. Please don't include your child's name or health details.</p>
+
+    <button class="btn-primary" id="fb-submit" style="width:100%; justify-content:center; display:flex;">Send feedback</button>
+    <p class="text-xs opacity-60 mt-3" id="fb-status"></p>
+  </div>
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   DATA
+   Flags: iron, vitc, vita, fat  (used for smart pairing + badges)
+---------------------------------------------------------------- */
+const STAGES = [
+  {
+    id: 's1', range: '5–6 months', label: 'First Tastes',
+    desc: 'Single ingredients, smooth purees, sieved fine. Thin enough to drip slowly off a spoon.',
+    tip: "Start with iron-friendly, easy-to-digest single foods like plain wimbi porridge or mashed banana. One new food every 2 to 3 days, watching for rashes, vomiting or looser stools.",
+    texture: 'Smooth purees, sieved',
+    rule: '1–2 tbsp, once a day for the first 2–3 days',
+    carbs: [ {n:'Wimbi porridge (plain)', note:'thin, no sugar'}, {n:'Uji ya mtama', note:'sorghum, sieved smooth'}, {n:'Sweet potato mash', note:'steamed, plain', flags:['vita']}, {n:'Potato mash', note:'steamed, plain'} ],
+    proteins: [ {n:'Egg yolk mash', note:'well cooked, small amount', flags:['iron']}, {n:'Natural yogurt', note:'plain, unsweetened', flags:['fat']} ],
+    veg: [ {n:'Pumpkin puree', flags:['vita']}, {n:'Butternut puree', flags:['vita']}, {n:'Carrot puree', flags:['vita']}, {n:'Avocado mash', flags:['fat']} ],
+    fruit: [ {n:'Mashed ripe banana'}, {n:'Avocado + banana + yogurt mash', note:'our go-to combo', flags:['fat']} ],
+  },
+  {
+    id: 's2', range: '6–8 months', label: 'Building Blocks',
+    desc: 'Thicker mashes with a little texture. Two food groups can start mixing.',
+    tip: "This is the iron window — offer egg yolk, liver, minced meat or ndengu at least 4 to 5 times a week, ideally alongside a vitamin-C food to help absorption.",
+    texture: 'Thick mash, tiny soft lumps',
+    rule: 'Building to 2 meals a day, roughly 3 to 4 tbsp per meal',
+    carbs: [ {n:'Wimbi porridge + banana'}, {n:'Rice, well cooked & mashed'}, {n:'Nduma (arrowroot) mash'}, {n:'Matoke (green banana) mash'}, {n:'Soft cooked oats'} ],
+    proteins: [ {n:'Ndengu (green grams) mash', note:'skins removed', flags:['iron']}, {n:'Egg yolk, mashed into food', flags:['iron']}, {n:'Minced meat, well cooked & mashed', flags:['iron']}, {n:'Chicken liver, mashed', note:'excellent iron source', flags:['iron']}, {n:'Natural yogurt', flags:['fat']}, {n:'Pureed beans', note:'skins removed', flags:['iron']}, {n:'Lentils (kamande) puree', flags:['iron']} ],
+    veg: [ {n:'Butternut & sweet potato mash', flags:['vita']}, {n:'Carrot & potato mash', flags:['vita']}, {n:'Spinach, finely mashed', flags:['iron','vitc']}, {n:'Peas, mashed'} ],
+    fruit: [ {n:'Banana + avocado + yogurt', flags:['fat']}, {n:'Steamed apple, mashed'} ],
+  },
+  {
+    id: 's3', range: '8–10 months', label: 'Soft & Chunky',
+    desc: 'Soft lumps and finger foods baby can pick up and gum.',
+    tip: "Offer soft finger-food strips (sweet potato, banana, avocado) alongside spoon meals — this builds baby's own feeding skill and jaw strength. Keep pieces soft enough to squash between two fingers.",
+    texture: 'Soft lumps + finger foods',
+    rule: '3 meals a day plus 1 snack, roughly 4 to 6 tbsp per meal',
+    carbs: [ {n:'Wimbi porridge, less thin'}, {n:'Sweet potato fingers', note:'soft, steamed', flags:['vita']}, {n:'Rice with soft veg mixed in'}, {n:'Nduma fingers'}, {n:'Soft ugali crumbles'} ],
+    proteins: [ {n:'Ndengu & rice mash', flags:['iron']}, {n:'Shredded soft chicken'}, {n:'Flaked fish', note:'debone very carefully'}, {n:'Whole mashed beans', flags:['iron']}, {n:'Beef or chicken liver, shredded', flags:['iron']}, {n:'Egg (yolk + white), scrambled soft', flags:['iron']}, {n:'Natural yogurt with fruit', flags:['fat']} ],
+    veg: [ {n:'Steamed carrot sticks', flags:['vita']}, {n:'Soft sukuma wiki, chopped small', flags:['iron','vitc']}, {n:'Pumpkin cubes, soft', flags:['vita']}, {n:'Courgette, soft cooked'}, {n:'Managu / terere, soft', flags:['iron']} ],
+    fruit: [ {n:'Banana & avocado chunks', flags:['fat']}, {n:'Yogurt & mashed banana bowl', flags:['fat']} ],
+  },
+  {
+    id: 's4', range: '10–12 months', label: 'Little Chewer',
+    desc: 'Chopped, mixed textures — close to what the family eats, unsalted.',
+    tip: "Most of baby's plate can now mirror the family meal, minus salt, sugar and chilli. Offer 3 meals plus 1 to 2 snacks daily, and let baby try self-feeding with a spoon.",
+    texture: 'Chopped, family-style',
+    rule: '3 meals plus 2 snacks a day, about 1/2 to 3/4 cup per meal',
+    carbs: [ {n:'Ugali, soft & chopped'}, {n:'Rice pilaf', note:'no chilli, light spice'}, {n:'Chapati, soft pieces'}, {n:'Sweet potato wedges', flags:['vita']}, {n:'Nduma & banana mash'}, {n:'Cassava, well cooked & soft'} ],
+    proteins: [ {n:'Ndengu stew, chopped soft', flags:['iron']}, {n:'Minced meat stew', flags:['iron']}, {n:'Shredded chicken stew'}, {n:'Beans, whole, soft', flags:['iron']}, {n:'Liver stew, chopped', flags:['iron']}, {n:'Omena', note:'well deboned, small amount', flags:['iron']}, {n:'Egg, chopped', flags:['iron']}, {n:'Chickpeas, soft & mashed', flags:['iron']} ],
+    veg: [ {n:'Sukuma wiki, chopped', flags:['iron','vitc']}, {n:'Managu / terere, soft', flags:['iron']}, {n:'Carrot & pea mix', flags:['vita']}, {n:'Butternut chunks', flags:['vita']}, {n:'Tomato, cooked soft', flags:['vitc']} ],
+    fruit: [ {n:'Banana & avocado slices', flags:['fat']}, {n:'Yogurt, fruit & oats bowl', flags:['fat']} ],
+  },
+  {
+    id: 's5', range: '12+ months', label: 'Family Table',
+    desc: 'Eating what the family eats — lightly seasoned, cut to size.',
+    tip: "Baby can now share most family meals — keep salt and sugar light, avoid whole nuts and hard raw veg, and always supervise closely at meals.",
+    texture: 'Family food, bite-sized',
+    rule: '3 meals plus 2 snacks a day, family portions scaled down',
+    carbs: [ {n:'Ugali'}, {n:'Rice'}, {n:'Chapati'}, {n:'Mukimo'}, {n:'Sweet potato', flags:['vita']}, {n:'Pasta, soft cooked'} ],
+    proteins: [ {n:'Ndengu stew', flags:['iron']}, {n:'Beef or chicken stew', flags:['iron']}, {n:'Fish stew'}, {n:'Beans', flags:['iron']}, {n:'Eggs', flags:['iron']}, {n:'Liver, occasional', flags:['iron']} ],
+    veg: [ {n:'Sukuma wiki', flags:['iron','vitc']}, {n:'Managu', flags:['iron']}, {n:'Cabbage, soft cooked'}, {n:'Carrots & peas', flags:['vita']}, {n:'Bell pepper, soft', flags:['vitc']} ],
+    fruit: [ {n:'Banana & avocado bowl', flags:['fat']}, {n:'Mango, ripe & soft'}, {n:'Yogurt & fruit', flags:['fat']} ],
+  },
+];
+
+const DIGESTION_TIPS = [
+  "Introduce only one new food every 2 to 3 days so you can spot any reaction early.",
+  "Cooked, cooled and mashed avocado is one of the gentlest foods for a baby's gut, and a great fat source.",
+  "If baby seems constipated, banana plus avocado plus a spoon of natural yogurt tends to help things move gently.",
+  "Iron matters most between 6 and 12 months, so egg yolk, liver, minced meat and ndengu should show up often.",
+  "Well-cooked green grams (ndengu) are easier to digest than most other legumes, making them a great starter protein.",
+  "Skip salt and sugar before 12 months; a baby's kidneys aren't ready for it, and it resets their taste preferences for life.",
+  "Natural yogurt (plain, unsweetened) is a gentle way to add probiotics and calcium once baby is past 6 months.",
+  "Loose stools? Ripe banana, plain rice and well-cooked carrot are naturally binding.",
+  "Pair iron foods like liver or ndengu with a vitamin-C food in the same meal, it helps baby absorb far more of the iron.",
+  "Always cool hot food and check the temperature on your wrist before serving.",
+];
+
+const FLAG_LABELS = { iron:'IRON', vitc:'VIT C', vita:'VIT A', fat:'FAT' };
+const FLAG_CLASS = { iron:'flag-iron', vitc:'flag-vitc', vita:'flag-vita', fat:'flag-fat' };
+
+const WATCH_ITEMS = [
+  { title:'Stunting', color:'#B85C6B', text:"Baby is not growing in length or height as expected for their age, often linked to a long-term lack of vitamins and minerals." },
+  { title:'Underweight', color:'#E0762C', text:"Baby is not gaining weight as expected, usually a sign meals are not nutrient-dense or frequent enough." },
+  { title:'Failure to thrive', color:'#8A2E3A', text:"Baby is behind on both weight and height, often from chronic poor nutrition or repeated illness." },
+  { title:'Anemia', color:'#553B84', text:"Low red blood cells or iron levels. Watch for pale skin, tiredness, or a baby who seems unusually low-energy." },
+  { title:'Rickets', color:'#8A6300', text:"Bones soften and legs can bow, usually linked to too little vitamin D or calcium." },
+  { title:'Chronic loose stools', color:'#4C7059', text:"Ongoing diarrhoea can itself cause nutrient loss, worth a clinic visit if it lasts more than a couple of days." },
+];
+
+const FAQS = [
+  { q:"Why no pawpaw in this planner?", a:"It's swapped out in favour of banana plus avocado mashed with natural yogurt, a combo that's just as gentle on digestion, adds a probiotic and healthy-fat boost, and is easy to keep on hand year-round." },
+  { q:"How much should baby eat at each meal?", a:"Less than you'd think. Start with 1 to 2 tablespoons at 6 months and let it grow gradually to about half a cup to three quarters of a cup by 12 months. Follow baby's hunger and fullness cues rather than a fixed amount." },
+  { q:"Does breastmilk or formula still matter after starting solids?", a:"Yes. It remains baby's main source of nutrition and hydration through the first year, and continued breastfeeding is recommended up to 2 years alongside food." },
+  { q:"What if baby refuses a food?", a:"Keep offering it without pressure. It can take 8 to 10 exposures before a baby accepts a new taste or texture. Avoid forcing the spoon." },
+  { q:"Can I use this planner if I'm a nurse or nanny, not a parent?", a:"Yes. The stages, food groups and pairing logic follow general pediatric nutrition guidance, so it works as a quick reference for anyone feeding a baby in this age range." },
+  { q:"Will my saved plan be there if I switch phones?", a:"Not yet. Saved plans currently live in this browser's storage only, so they stay on the device you saved them on. Use Add to calendar or WhatsApp share to carry a plan across devices." },
+];
+
+/* ---------------------------------------------------------------
+   STATE
+---------------------------------------------------------------- */
+let currentStageIndex = 1;
+let currentPlan = [];
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const SAVE_KEY = 'chakula_chetu_saved_plans';
+const FEEDBACK_KEY = 'chakula_chetu_feedback';
+const REVIEWS_KEY = 'chakula_chetu_reviews';
+const ROLE_KEY = 'chakula_chetu_role';
+
+/* ---------------------------------------------------------------
+   Rule-based generator
+   - No immediate repeats within a day or across adjacent days
+   - Iron-rich proteins deliberately scheduled ~5 of 7 days
+   - Lunch veg prefers vitamin C when protein is iron-rich (absorption)
+   - Dinner veg genuinely excludes the lunch veg used that same day
+---------------------------------------------------------------- */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function buildProteinSchedule(stage){
+  const ironItems = stage.proteins.filter(p => p.flags && p.flags.includes('iron'));
+  const otherItems = stage.proteins.filter(p => !(p.flags && p.flags.includes('iron')));
+  const targetIronDays = Math.min(5, 7 - (otherItems.length ? 2 : 0));
+  const schedule = [];
+
+  if(ironItems.length){
+    const ironCycle = shuffle(ironItems);
+    for(let i=0;i<targetIronDays;i++) schedule.push(ironCycle[i % ironCycle.length]);
+  }
+  const remaining = 7 - schedule.length;
+  if(remaining > 0){
+    const pool = otherItems.length ? otherItems : (ironItems.length ? ironItems : stage.proteins);
+    const cycle = shuffle(pool);
+    for(let i=0;i<remaining;i++) schedule.push(cycle[i % cycle.length]);
+  }
+
+  // Shuffle the schedule, then fix any accidental back-to-back repeats
+  const finalSchedule = shuffle(schedule);
+  for(let i=1;i<finalSchedule.length;i++){
+    if(finalSchedule[i].n === finalSchedule[i-1].n){
+      const swapWith = finalSchedule.findIndex((p,idx) => idx>i && p.n !== finalSchedule[i-1].n);
+      if(swapWith !== -1){
+        [finalSchedule[i], finalSchedule[swapWith]] = [finalSchedule[swapWith], finalSchedule[i]];
+      }
+    }
+  }
+  return finalSchedule;
+}
+
+function cyclePool(arr, length){
+  // Returns an array of `length`, cycling through a shuffled copy of arr,
+  // re-shuffling each lap so it doesn't feel mechanically repetitive.
+  const out = [];
+  let lap = shuffle(arr);
+  let idx = 0;
+  for(let i=0;i<length;i++){
+    if(idx >= lap.length){ lap = shuffle(arr); idx = 0; }
+    out.push(lap[idx]);
+    idx++;
+  }
+  return out;
+}
+
+function pickDifferentVeg(stage, excludeName, preferFlag){
+  const preferred = preferFlag ? stage.veg.filter(v => v.flags && v.flags.includes(preferFlag) && v.n !== excludeName) : [];
+  if(preferred.length) return { veg: preferred[Math.floor(Math.random()*preferred.length)], boosted:true };
+  const rest = stage.veg.filter(v => v.n !== excludeName);
+  const pool = rest.length ? rest : stage.veg;
+  return { veg: pool[Math.floor(Math.random()*pool.length)], boosted:false };
+}
+
+function generatePlan(stage){
+  const plan = [];
+  const carbCycle = cyclePool(stage.carbs, 14);       // breakfast + dinner carbs, 7 days each
+  const fruitCycle = cyclePool(stage.fruit, 7);
+  const proteinSchedule = buildProteinSchedule(stage);
+
+  for(let i=0;i<7;i++){
+    const breakfastCarb = carbCycle[i];
+    const dinnerCarb = carbCycle[7+i].n === breakfastCarb.n
+      ? (stage.carbs.find(c => c.n !== breakfastCarb.n) || carbCycle[7+i])
+      : carbCycle[7+i];
+    const protein = proteinSchedule[i];
+
+    const lunchVegPick = pickDifferentVeg(stage, null, protein.flags && protein.flags.includes('iron') ? 'vitc' : null);
+    const dinnerVegPick = pickDifferentVeg(stage, lunchVegPick.veg.n, 'vita');
+    const fatNote = dinnerVegPick.boosted ? (stage.fruit.find(f => f.flags && f.flags.includes('fat')) || null) : null;
+
+    plan.push({
+      day: DAYS[i],
+      breakfast: { items:[breakfastCarb], fruit: fruitCycle[i] },
+      lunch: { items:[protein, lunchVegPick.veg], boosted: lunchVegPick.boosted },
+      dinner: { items:[dinnerCarb, dinnerVegPick.veg], fatNote },
+    });
+  }
+  return plan;
+}
+
+/* ---------------------------------------------------------------
+   RENDER
+---------------------------------------------------------------- */
+function renderChips(){
+  const wrap = document.getElementById('age-chips');
+  wrap.innerHTML = STAGES.map((s,i)=>`
+    <button class="age-card ${i===currentStageIndex?'active':''}" data-index="${i}">
+      <span class="range">${s.range}</span>
+      <span class="label">${s.label}</span>
+    </button>
+  `).join('');
+  wrap.querySelectorAll('.age-card').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      currentStageIndex = parseInt(btn.dataset.index);
+      renderChips(); renderStageInfo(); renderFoodLibrary(); regenerate();
+      document.getElementById('planner').scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+}
+
+function renderStageInfo(){
+  const s = STAGES[currentStageIndex];
+  document.getElementById('stage-label').textContent = 'Stage · ' + s.label;
+  document.getElementById('stage-title').textContent = s.range;
+  document.getElementById('stage-desc').textContent = s.desc;
+  document.getElementById('digestion-tip').textContent = DIGESTION_TIPS[Math.floor(Math.random()*DIGESTION_TIPS.length)];
+
+  document.getElementById('golden-strip').innerHTML = `
+    <div class="golden-card">
+      <p class="mono text-xs opacity-60 mb-1">TEXTURE</p>
+      <p class="text-sm font-medium">${s.texture}</p>
+    </div>
+    <div class="golden-card">
+      <p class="mono text-xs opacity-60 mb-1">PORTIONS</p>
+      <p class="text-sm font-medium">${s.rule}</p>
+    </div>
+    <div class="golden-card">
+      <p class="mono text-xs opacity-60 mb-1">FOCUS</p>
+      <p class="text-sm font-medium">${s.tip.split('.')[0]}.</p>
+    </div>
+  `;
+}
+
+function flagDots(item){
+  if(!item.flags) return '';
+  return `<div class="flags">` + item.flags.map(f=>`<span class="flag-dot ${FLAG_CLASS[f]}">${FLAG_LABELS[f]}</span>`).join('') + `</div>`;
+}
+
+function renderFoodLibrary(){
+  const s = STAGES[currentStageIndex];
+  const groups = [
+    {title:'Carbs & staples', items:s.carbs},
+    {title:'Proteins & pulses', items:s.proteins},
+    {title:'Veggies', items:s.veg},
+    {title:'Fruit & fat combos', items:s.fruit},
+  ];
+  document.getElementById('food-library').innerHTML = groups.map(g=>`
+    <div>
+      <p class="section-title mb-3">${g.title}</p>
+      <div class="space-y-2">
+        ${g.items.map(it=>`
+          <div class="food-pill">
+            <div class="font-medium">${it.n}</div>
+            ${it.note?`<div class="text-xs opacity-60 mt-0.5">${it.note}</div>`:''}
+            ${flagDots(it)}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function mealTags(items){
+  return items.map(it=>`<div class="text-sm font-medium leading-snug">${it.n}</div>`).join('<div class="text-xs opacity-40 my-0.5">+</div>');
+}
+
+function renderPlan(plan){
+  const grid = document.getElementById('plan-grid');
+  grid.innerHTML = plan.map((d, idx)=>`
+    <div class="day-card" style="animation-delay:${idx*0.06}s">
+      <div class="day-head">
+        <span class="day-num">DAY ${idx+1}</span>
+        <span class="font-semibold text-sm">${d.day}</span>
+      </div>
+      <div class="meal-row">
+        <p class="meal-label">Breakfast</p>
+        ${mealTags(d.breakfast.items)}
+        <div><span class="tag tag-carb">carb</span></div>
+        <div class="mt-2 text-xs opacity-70">+ ${d.breakfast.fruit.n}</div>
+      </div>
+      <div class="meal-row">
+        <p class="meal-label">Lunch</p>
+        ${mealTags(d.lunch.items)}
+        <div><span class="tag tag-protein">protein</span><span class="tag tag-veg">veg</span>${d.lunch.boosted?'<span class="tag tag-boost">iron ✕ vit C boost</span>':''}</div>
+      </div>
+      <div class="meal-row">
+        <p class="meal-label">Dinner</p>
+        ${mealTags(d.dinner.items)}
+        <div><span class="tag tag-carb">carb</span><span class="tag tag-veg">veg</span>${d.dinner.fatNote?`<span class="tag tag-boost">+ ${d.dinner.fatNote.n} for vit A</span>`:''}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderWatchGrid(){
+  document.getElementById('watch-grid').innerHTML = WATCH_ITEMS.map(w=>`
+    <div class="watch-card">
+      <p class="font-semibold mb-1"><span class="dot" style="background:${w.color}"></span>${w.title}</p>
+      <p class="text-sm opacity-75 leading-relaxed">${w.text}</p>
+    </div>
+  `).join('');
+}
+
+function renderFaq(){
+  document.getElementById('faq-list').innerHTML = FAQS.map(f=>`
+    <details class="faq"><summary><span class="faq-q">${f.q}</span></summary><p>${f.a}</p></details>
+  `).join('');
+}
+
+function planToText(stage, plan){
+  let out = `CHAKULA CHETU — Weaning plan (${stage.range}, ${stage.label})\n\n`;
+  plan.forEach(d=>{
+    out += `${d.day.toUpperCase()}\n`;
+    out += `  Breakfast: ${d.breakfast.items.map(x=>x.n).join(', ')} + ${d.breakfast.fruit.n}\n`;
+    out += `  Lunch: ${d.lunch.items.map(x=>x.n).join(', ')}\n`;
+    out += `  Dinner: ${d.dinner.items.map(x=>x.n).join(', ')}\n\n`;
+  });
+  return out;
+}
+
+function regenerate(){
+  const btn = document.getElementById('generate-btn');
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = 'Building your week…';
+  document.getElementById('plan-grid').classList.add('pulsing');
+
+  setTimeout(()=>{
+    currentPlan = generatePlan(STAGES[currentStageIndex]);
+    renderPlan(currentPlan);
+    renderStageInfo();
+    document.getElementById('plan-grid').classList.remove('pulsing');
+    btn.disabled = false;
+    btn.textContent = originalText;
+    renderPlanFeedback();
+  }, 280);
+}
+
+/* ---------------------------------------------------------------
+   Toast helper
+---------------------------------------------------------------- */
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 2400);
+}
+
+/* ---------------------------------------------------------------
+   Save / load plans (localStorage — this device only)
+---------------------------------------------------------------- */
+function getSavedPlans(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function setSavedPlans(list){
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(list)); }catch(e){ /* storage unavailable */ }
+}
+function savePlan(){
+  const list = getSavedPlans();
+  const entry = {
+    id: 'plan_' + Date.now(),
+    stageIndex: currentStageIndex,
+    stageRange: STAGES[currentStageIndex].range,
+    stageLabel: STAGES[currentStageIndex].label,
+    savedAt: new Date().toISOString(),
+    plan: currentPlan,
+  };
+  list.unshift(entry);
+  setSavedPlans(list.slice(0, 12)); // keep it tidy
+  renderSavedList();
+  showToast('Plan saved on this device ✓');
+}
+function deletePlan(id){
+  setSavedPlans(getSavedPlans().filter(p => p.id !== id));
+  renderSavedList();
+}
+function loadPlan(id){
+  const found = getSavedPlans().find(p => p.id === id);
+  if(!found) return;
+  currentStageIndex = found.stageIndex;
+  currentPlan = found.plan;
+  renderChips(); renderStageInfo(); renderFoodLibrary(); renderPlan(currentPlan);
+  document.getElementById('planner').scrollIntoView({behavior:'smooth', block:'start'});
+  showToast('Loaded saved plan ✓');
+}
+function formatSavedDate(iso){
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' });
+}
+function renderSavedList(){
+  const list = getSavedPlans();
+  const wrap = document.getElementById('saved-list');
+  const emptyNote = document.getElementById('saved-empty-note');
+  if(!list.length){
+    wrap.innerHTML = '';
+    emptyNote.textContent = "No saved plans yet — generate a week above, then tap Save plan to keep it here for next time.";
+    return;
+  }
+  emptyNote.textContent = "Saved plans live in this browser, so they're here whenever you come back on this phone or computer.";
+  wrap.innerHTML = list.map(p=>`
+    <div class="saved-card">
+      <div>
+        <p class="font-semibold text-sm">${p.stageRange} · ${p.stageLabel}</p>
+        <p class="text-xs opacity-60">Saved ${formatSavedDate(p.savedAt)}</p>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn-ghost" data-load="${p.id}">View</button>
+        <button class="btn-ghost" data-del="${p.id}" style="color:var(--iron); border-color:rgba(138,46,58,0.3);">Delete</button>
+      </div>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('[data-load]').forEach(b => b.addEventListener('click', ()=> loadPlan(b.dataset.load)));
+  wrap.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', ()=> deletePlan(b.dataset.del)));
+}
+
+/* ---------------------------------------------------------------
+   Calendar export (.ics) — importable to Google/Apple/phone calendars
+---------------------------------------------------------------- */
+function pad(n){ return n.toString().padStart(2,'0'); }
+function toICSDate(date){
+  return date.getFullYear().toString() + pad(date.getMonth()+1) + pad(date.getDate()) + 'T' + pad(date.getHours()) + pad(date.getMinutes()) + '00';
+}
+function nextMonday(){
+  const d = new Date();
+  const day = d.getDay(); // 0 Sun ... 6 Sat
+  const diff = (8 - day) % 7 || 7;
+  d.setDate(d.getDate() + (day === 1 ? 0 : diff));
+  d.setHours(0,0,0,0);
+  return d;
+}
+function icsEscape(text){
+  return String(text).replace(/[\\;,]/g, m => '\\' + m).replace(/\n/g, '\\n');
+}
+function buildICS(stage, plan){
+  const start = nextMonday();
+  const meals = [
+    { key:'breakfast', hour:8,  label:'Breakfast' },
+    { key:'lunch',     hour:13, label:'Lunch' },
+    { key:'dinner',    hour:18, label:'Dinner' },
+  ];
+  let lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Chakula Chetu//Baby Meal Planner//EN',
+    'CALSCALE:GREGORIAN',
+  ];
+  plan.forEach((d, dayIdx)=>{
+    meals.forEach(m=>{
+      const dt = new Date(start);
+      dt.setDate(start.getDate() + dayIdx);
+      dt.setHours(m.hour, 0, 0, 0);
+      const dtEnd = new Date(dt.getTime() + 30*60000);
+      const mealData = d[m.key];
+      const items = mealData.items.map(x=>x.n).join(', ') + (mealData.fruit ? ' + ' + mealData.fruit.n : '');
+      lines.push('BEGIN:VEVENT');
+      lines.push('UID:' + dtIdSeed(dt) + '-' + m.key + '@chakulachetu');
+      lines.push('DTSTAMP:' + toICSDate(new Date()));
+      lines.push('DTSTART:' + toICSDate(dt));
+      lines.push('DTEND:' + toICSDate(dtEnd));
+      lines.push('SUMMARY:' + icsEscape(`Baby ${m.label}: ${items}`));
+      lines.push('DESCRIPTION:' + icsEscape(`Chakula Chetu plan — ${stage.range} (${stage.label}). ${m.label}: ${items}`));
+      lines.push('END:VEVENT');
+    });
+  });
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
+function dtIdSeed(dt){ return dt.getTime().toString(36); }
+function downloadICS(){
+  const stage = STAGES[currentStageIndex];
+  const ics = buildICS(stage, currentPlan);
+  const blob = new Blob([ics], { type:'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'chakula-chetu-plan.ics';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Calendar file downloaded — open it to add to your phone 📅');
+}
+
+/* ---------------------------------------------------------------
+   WhatsApp share
+---------------------------------------------------------------- */
+function shareWhatsApp(){
+  const stage = STAGES[currentStageIndex];
+  const text = planToText(stage, currentPlan);
+  const url = 'https://wa.me/?text=' + encodeURIComponent(text);
+  window.open(url, '_blank');
+}
+
+/* ---------------------------------------------------------------
+   Feedback & Reviews
+   Everything here writes to localStorage — this device only. There's
+   no backend, so nothing here aggregates across users or visitors.
+   submitFeedback() / submitReview() are the two seams to swap for a
+   real API call later without touching the UI code above them.
+---------------------------------------------------------------- */
+function readList(key){
+  try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : []; }
+  catch(e){ return []; }
+}
+function writeList(key, list){
+  try{ localStorage.setItem(key, JSON.stringify(list)); }catch(e){ /* storage unavailable */ }
+}
+function submitFeedback(entry){
+  const list = readList(FEEDBACK_KEY);
+  list.unshift(Object.assign({ id:'fb_'+Date.now(), at:new Date().toISOString() }, entry));
+  writeList(FEEDBACK_KEY, list.slice(0, 200));
+}
+function getSavedRole(){
+  try{ return localStorage.getItem(ROLE_KEY) || ''; }catch(e){ return ''; }
+}
+function setSavedRole(role){
+  try{ if(role) localStorage.setItem(ROLE_KEY, role); }catch(e){ /* noop */ }
+}
+
+/* ---- Plan-usefulness strip (after generating a week) ---- */
+const PLAN_FB_DISMISSED_KEY = 'chakula_plan_fb_dismissed';
+function renderPlanFeedback(){
+  const host = document.getElementById('plan-feedback');
+  if(!host) return;
+  if(sessionStorage.getItem(PLAN_FB_DISMISSED_KEY)){ host.innerHTML = ''; return; }
+
+  host.innerHTML = `
+    <div class="fb-strip" id="fb-strip-inner">
+      <p class="font-semibold text-sm">How useful was this meal plan?</p>
+      <div class="fb-choice-row">
+        <button class="fb-choice" data-val="Very useful">Very useful</button>
+        <button class="fb-choice" data-val="Somewhat useful">Somewhat useful</button>
+        <button class="fb-choice" data-val="Not useful">Not useful</button>
+      </div>
+    </div>
+  `;
+  host.querySelectorAll('.fb-choice').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const val = btn.dataset.val;
+      submitFeedback({ type:'plan_usefulness', value:val, stageId:STAGES[currentStageIndex].id, stageRange:STAGES[currentStageIndex].range });
+      const inner = document.getElementById('fb-strip-inner');
+      inner.innerHTML = `
+        <p class="fb-thanks">✓ Thanks — that helps.</p>
+        <div class="fb-followup">
+          <label class="field-label" style="margin-top:0.75rem;">What would make this plan more useful? (optional)</label>
+          <textarea id="fb-followup-text" placeholder="Type here, or just skip"></textarea>
+          <div class="fb-choice-row">
+            <button class="fb-choice" id="fb-followup-send">Send</button>
+            <button class="fb-choice" id="fb-followup-skip">Skip</button>
+          </div>
+        </div>
+      `;
+      const finish = (comment)=>{
+        if(comment) submitFeedback({ type:'plan_usefulness_followup', value:comment, stageId:STAGES[currentStageIndex].id });
+        sessionStorage.setItem(PLAN_FB_DISMISSED_KEY, '1');
+        document.getElementById('plan-feedback').innerHTML = '';
+        showToast('Thanks for the feedback ✓');
+      };
+      document.getElementById('fb-followup-send').addEventListener('click', ()=> finish(document.getElementById('fb-followup-text').value.trim()));
+      document.getElementById('fb-followup-skip').addEventListener('click', ()=> finish(''));
+    });
+  });
+}
+
+/* ---- "Was this helpful?" widgets for educational sections ---- */
+function renderHelpfulWidget(hostId, sectionName){
+  const host = document.getElementById(hostId);
+  if(!host) return;
+  const dismissKey = 'chakula_helpful_' + sectionName;
+  if(sessionStorage.getItem(dismissKey)){ host.innerHTML = ''; return; }
+  host.innerHTML = `
+    <span class="opacity-70">Was this helpful?</span>
+    <button data-v="yes">Yes</button>
+    <button data-v="no">Not really</button>
+  `;
+  host.classList.add('helpful-widget');
+  host.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      submitFeedback({ type:'content_helpful', section:sectionName, value: btn.dataset.v === 'yes' });
+      host.querySelectorAll('button').forEach(b=>b.classList.remove('picked'));
+      btn.classList.add('picked');
+      sessionStorage.setItem(dismissKey, '1');
+      setTimeout(()=>{ host.innerHTML = '<span class="opacity-60">Thanks for letting us know ✓</span>'; }, 250);
+    });
+  });
+}
+
+/* ---- Floating feedback modal ---- */
+let fbSelectedRole = getSavedRole();
+let fbSelectedMood = '';
+
+function openFeedbackModal(){
+  document.getElementById('feedback-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if(fbSelectedRole){
+    document.querySelectorAll('#fb-role-chips .chip-choice').forEach(c=>{
+      c.classList.toggle('picked', c.dataset.role === fbSelectedRole);
+    });
+  }
+}
+function closeFeedbackModal(){
+  document.getElementById('feedback-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('fab-feedback').addEventListener('click', openFeedbackModal);
+document.getElementById('modal-close-btn').addEventListener('click', closeFeedbackModal);
+document.getElementById('feedback-modal').addEventListener('click', (e)=>{
+  if(e.target.id === 'feedback-modal') closeFeedbackModal();
+});
+document.querySelectorAll('#fb-role-chips .chip-choice').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    fbSelectedRole = chip.dataset.role;
+    document.querySelectorAll('#fb-role-chips .chip-choice').forEach(c=>c.classList.remove('picked'));
+    chip.classList.add('picked');
+  });
+});
+document.querySelectorAll('#fb-mood-chips .chip-choice').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    fbSelectedMood = chip.dataset.mood;
+    document.querySelectorAll('#fb-mood-chips .chip-choice').forEach(c=>c.classList.remove('picked'));
+    chip.classList.add('picked');
+  });
+});
+document.getElementById('fb-submit').addEventListener('click', ()=>{
+  const improve = document.getElementById('fb-improve').value.trim();
+  const email = document.getElementById('fb-email').value.trim();
+  if(!fbSelectedMood && !improve){
+    document.getElementById('fb-status').textContent = 'Pick a mood or add a note before sending — even one helps.';
+    return;
+  }
+  if(fbSelectedRole) setSavedRole(fbSelectedRole);
+  submitFeedback({ type:'general', role: fbSelectedRole || null, mood: fbSelectedMood || null, improve: improve || null, email: email || null });
+  closeFeedbackModal();
+  showToast('Thanks — feedback saved ✓');
+  document.getElementById('fb-improve').value = '';
+  document.getElementById('fb-email').value = '';
+  document.getElementById('fb-status').textContent = '';
+  fbSelectedMood = '';
+  document.querySelectorAll('#fb-mood-chips .chip-choice').forEach(c=>c.classList.remove('picked'));
+});
+
+/* ---- Reviews: star rating, submission, moderated public list ---- */
+let reviewRating = 0;
+function renderStarPicker(){
+  const wrap = document.getElementById('review-stars');
+  wrap.innerHTML = [1,2,3,4,5].map(n=>`<button type="button" class="star-btn" data-n="${n}" aria-label="${n} star${n>1?'s':''}">★</button>`).join('');
+  wrap.querySelectorAll('.star-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      reviewRating = parseInt(btn.dataset.n);
+      wrap.querySelectorAll('.star-btn').forEach(b=> b.classList.toggle('filled', parseInt(b.dataset.n) <= reviewRating));
+    });
+  });
+}
+
+function starString(n){
+  return '★★★★★☆☆☆☆☆'.slice(5-n, 10-n);
+}
+
+function timeAgo(iso){
+  const diff = Date.now() - new Date(iso).getTime();
+  const days = Math.floor(diff / 86400000);
+  if(days <= 0) return 'today';
+  if(days === 1) return 'yesterday';
+  if(days < 30) return days + ' days ago';
+  const months = Math.floor(days/30);
+  return months + (months===1 ? ' month ago' : ' months ago');
+}
+
+function renderReviews(){
+  const all = readList(REVIEWS_KEY).filter(r => r.consented);
+  const wrap = document.getElementById('reviews-list');
+  if(!all.length){
+    wrap.innerHTML = `
+      <div class="rounded-2xl border p-6 text-center" style="border-color:var(--line); grid-column:1/-1;">
+        <p class="text-sm opacity-70">No public reviews yet — be the first to share how Chakula Chetu has helped you.</p>
+      </div>
+    `;
+    return;
+  }
+  wrap.innerHTML = all.slice(0, 20).map(r=>`
+    <div class="review-card">
+      <div class="review-stars">${starString(r.rating || 0)}</div>
+      <p class="review-text">"${(r.text || '').replace(/</g,'&lt;')}"</p>
+      <p class="review-meta">— ${r.name ? r.name.replace(/</g,'&lt;') : 'Anonymous'}${r.role ? ', ' + r.role : ''}${r.county ? ' · ' + r.county.replace(/</g,'&lt;') : ''} · ${timeAgo(r.at)}</p>
+      ${r.useful ? `<span class="review-used-tag">Found most useful: ${r.useful}</span>` : ''}
+    </div>
+  `).join('');
+}
+
+document.getElementById('review-submit').addEventListener('click', ()=>{
+  const text = document.getElementById('review-text').value.trim();
+  const statusEl = document.getElementById('review-status');
+  if(!text){
+    statusEl.textContent = 'Add a short review before sending — even a sentence helps.';
+    return;
+  }
+  const consented = document.getElementById('review-consent').checked;
+  const entry = {
+    id: 'rev_' + Date.now(),
+    at: new Date().toISOString(),
+    rating: reviewRating,
+    text,
+    useful: document.getElementById('review-useful').value || null,
+    name: document.getElementById('review-name').value.trim() || null,
+    role: document.getElementById('review-role').value || null,
+    county: document.getElementById('review-county').value.trim() || null,
+    consented,
+  };
+  const list = readList(REVIEWS_KEY);
+  list.unshift(entry);
+  writeList(REVIEWS_KEY, list);
+  if(entry.role) setSavedRole(entry.role);
+
+  // reset form
+  document.getElementById('review-text').value = '';
+  document.getElementById('review-name').value = '';
+  document.getElementById('review-county').value = '';
+  document.getElementById('review-useful').value = '';
+  document.getElementById('review-role').value = '';
+  document.getElementById('review-consent').checked = false;
+  reviewRating = 0;
+  renderStarPicker();
+
+  statusEl.textContent = consented
+    ? 'Thank you — your review is now shown below.'
+    : "Thank you — saved privately on this device. It won't appear publicly since the consent box wasn't checked.";
+  renderReviews();
+  showToast('Review saved ✓');
+});
+
+/* ---------------------------------------------------------------
+   Wire up events
+---------------------------------------------------------------- */
+document.getElementById('generate-btn').addEventListener('click', regenerate);
+document.getElementById('print-btn').addEventListener('click', ()=>window.print());
+document.getElementById('copy-btn').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(planToText(STAGES[currentStageIndex], currentPlan)).then(()=>{
+    showToast('Plan copied to clipboard ✓');
+  });
+});
+document.getElementById('save-btn').addEventListener('click', savePlan);
+document.getElementById('calendar-btn').addEventListener('click', downloadICS);
+document.getElementById('whatsapp-btn').addEventListener('click', shareWhatsApp);
+
+document.getElementById('mb-generate').addEventListener('click', regenerate);
+document.getElementById('mb-save').addEventListener('click', savePlan);
+document.getElementById('mb-calendar').addEventListener('click', downloadICS);
+
+document.getElementById('copy-mpesa-btn').addEventListener('click', ()=>{
+  navigator.clipboard.writeText('0741392650').then(()=>{
+    showToast('M-Pesa number copied ✓');
+  });
+});
+
+renderChips();
+renderStageInfo();
+renderFoodLibrary();
+renderWatchGrid();
+renderFaq();
+renderSavedList();
+renderHelpfulWidget('helpful-pairing', 'pairing');
+renderHelpfulWidget('helpful-library', 'library');
+renderStarPicker();
+renderReviews();
+regenerate();
+</script>
+</body>
+</html>
