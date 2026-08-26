@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Chakula Chetu — Kenyan Baby Weaning Planner</title>
 <meta name="description" content="A weaning meal planner for Kenyan parents, caregivers and nurses — local foods, gentle on digestion, from first tastes to family table.">
+<meta name="theme-color" content="#2F4A3D">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -792,7 +797,32 @@
   </div>
 </div>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
+/* ---------------------------------------------------------------
+   BACKEND (Supabase)
+   Reviews are stored in a shared Postgres table so every visitor
+   sees the same list, not just the device that submitted them.
+   Fill these in with your own project's values from
+   Supabase → Settings → API Keys.
+
+   Supabase renamed this key in 2025/2026: newer project dashboards
+   show it as "Publishable key" (starts with sb_publishable_...)
+   under an "API Keys" tab, instead of the older "anon public" key
+   (a long JWT string) under "Project API keys". Either works exactly
+   the same here — grab whichever one your dashboard shows you under
+   Settings → API Keys → Project URL / your client-side key.
+
+   Whichever one you use, it's meant to be public and safe to ship in
+   this file — it can only do what the table's Row Level Security
+   policies allow (see SUPABASE_SETUP.sql), nothing more.
+---------------------------------------------------------------- */
+const SUPABASE_URL = 'https://oamcpdydmswndttfoazx.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_tHHBVbF7aqXESePJBJqmHA_BzOH4C9Q';
+const sb = (SUPABASE_URL.includes('YOUR-PROJECT-REF'))
+  ? null
+  : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 /* ---------------------------------------------------------------
    DATA
    Flags: iron, vitc, vita, fat  (used for smart pairing + badges)
@@ -897,7 +927,6 @@ let currentPlan = [];
 const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const SAVE_KEY = 'chakula_chetu_saved_plans';
 const FEEDBACK_KEY = 'chakula_chetu_feedback';
-const REVIEWS_KEY = 'chakula_chetu_reviews';
 const ROLE_KEY = 'chakula_chetu_role';
 
 /* ---------------------------------------------------------------
@@ -1305,10 +1334,11 @@ function shareWhatsApp(){
 
 /* ---------------------------------------------------------------
    Feedback & Reviews
-   Everything here writes to localStorage — this device only. There's
-   no backend, so nothing here aggregates across users or visitors.
-   submitFeedback() / submitReview() are the two seams to swap for a
-   real API call later without touching the UI code above them.
+   Reviews are shared across visitors via Supabase (see the client
+   setup near the top of this script). The feedback widget below
+   still writes to localStorage only — it's a lower-stakes "how are
+   we doing" pulse, not something that needs to be public or
+   aggregated across devices.
 ---------------------------------------------------------------- */
 function readList(key){
   try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : []; }
@@ -1478,9 +1508,32 @@ function timeAgo(iso){
   return months + (months===1 ? ' month ago' : ' months ago');
 }
 
-function renderReviews(){
-  const all = readList(REVIEWS_KEY).filter(r => r.consented);
+async function renderReviews(){
   const wrap = document.getElementById('reviews-list');
+  if(!sb){
+    wrap.innerHTML = `
+      <div class="rounded-2xl border p-6 text-center" style="border-color:var(--line); grid-column:1/-1;">
+        <p class="text-sm opacity-70">Reviews aren't connected yet — add your Supabase URL and key near the top of the script.</p>
+      </div>
+    `;
+    return;
+  }
+  const { data, error } = await sb
+    .from('reviews')
+    .select('*')
+    .eq('consented', true)
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  if(error){
+    wrap.innerHTML = `
+      <div class="rounded-2xl border p-6 text-center" style="border-color:var(--line); grid-column:1/-1;">
+        <p class="text-sm opacity-70">Couldn't load reviews right now — check back in a moment.</p>
+      </div>
+    `;
+    return;
+  }
+  const all = data || [];
   if(!all.length){
     wrap.innerHTML = `
       <div class="rounded-2xl border p-6 text-center" style="border-color:var(--line); grid-column:1/-1;">
@@ -1489,27 +1542,29 @@ function renderReviews(){
     `;
     return;
   }
-  wrap.innerHTML = all.slice(0, 20).map(r=>`
+  wrap.innerHTML = all.map(r=>`
     <div class="review-card">
       <div class="review-stars">${starString(r.rating || 0)}</div>
       <p class="review-text">"${(r.text || '').replace(/</g,'&lt;')}"</p>
-      <p class="review-meta">— ${r.name ? r.name.replace(/</g,'&lt;') : 'Anonymous'}${r.role ? ', ' + r.role : ''}${r.county ? ' · ' + r.county.replace(/</g,'&lt;') : ''} · ${timeAgo(r.at)}</p>
+      <p class="review-meta">— ${r.name ? r.name.replace(/</g,'&lt;') : 'Anonymous'}${r.role ? ', ' + r.role : ''}${r.county ? ' · ' + r.county.replace(/</g,'&lt;') : ''} · ${timeAgo(r.created_at)}</p>
       ${r.useful ? `<span class="review-used-tag">Found most useful: ${r.useful}</span>` : ''}
     </div>
   `).join('');
 }
 
-document.getElementById('review-submit').addEventListener('click', ()=>{
+document.getElementById('review-submit').addEventListener('click', async ()=>{
   const text = document.getElementById('review-text').value.trim();
   const statusEl = document.getElementById('review-status');
   if(!text){
     statusEl.textContent = 'Add a short review before sending — even a sentence helps.';
     return;
   }
+  if(!sb){
+    statusEl.textContent = "Reviews aren't connected yet — add your Supabase URL and key near the top of the script.";
+    return;
+  }
   const consented = document.getElementById('review-consent').checked;
   const entry = {
-    id: 'rev_' + Date.now(),
-    at: new Date().toISOString(),
     rating: reviewRating,
     text,
     useful: document.getElementById('review-useful').value || null,
@@ -1518,9 +1573,17 @@ document.getElementById('review-submit').addEventListener('click', ()=>{
     county: document.getElementById('review-county').value.trim() || null,
     consented,
   };
-  const list = readList(REVIEWS_KEY);
-  list.unshift(entry);
-  writeList(REVIEWS_KEY, list);
+
+  const submitBtn = document.getElementById('review-submit');
+  submitBtn.disabled = true;
+  const { error } = await sb.from('reviews').insert(entry);
+  submitBtn.disabled = false;
+
+  if(error){
+    statusEl.textContent = "Something went wrong sending that — mind trying again?";
+    return;
+  }
+
   if(entry.role) setSavedRole(entry.role);
 
   // reset form
@@ -1535,7 +1598,7 @@ document.getElementById('review-submit').addEventListener('click', ()=>{
 
   statusEl.textContent = consented
     ? 'Thank you — your review is now shown below.'
-    : "Thank you — saved privately on this device. It won't appear publicly since the consent box wasn't checked.";
+    : "Thank you — sent privately. It won't appear publicly since the consent box wasn't checked.";
   renderReviews();
   showToast('Review saved ✓');
 });
@@ -1564,6 +1627,63 @@ document.getElementById('copy-mpesa-btn').addEventListener('click', ()=>{
   });
 });
 
+/* ---- One-time migration: old browser-local reviews → Supabase ----
+   Before this backend existed, reviews lived in each visitor's own
+   localStorage under the key below. That data never touched a server,
+   so the only way to recover it is to let each browser that still has
+   it push it up once, the next time it loads this updated page. Any
+   browser that already cleared its storage, or never had reviews to
+   begin with, has nothing to migrate — there's no way to pull that
+   back after the fact.
+
+   Only reviews the person originally marked "show publicly" are
+   migrated. Reviews saved without that consent were a private,
+   on-device-only note by design — moving those into a shared backend
+   (even one that still hides them from the public list) would go
+   beyond what the person agreed to, so those are left alone and
+   simply cleared out with the rest of the old key.
+---------------------------------------------------------------- */
+const OLD_REVIEWS_KEY = 'chakula_chetu_reviews';
+const REVIEWS_MIGRATED_KEY = 'chakula_reviews_migrated_v1';
+
+async function migrateLocalReviewsToSupabase(){
+  if(!sb) return;                                  // nothing to migrate to yet
+  if(localStorage.getItem(REVIEWS_MIGRATED_KEY)) return;
+
+  let old = [];
+  try{ old = JSON.parse(localStorage.getItem(OLD_REVIEWS_KEY) || '[]'); }catch(e){ old = []; }
+
+  const toMigrate = old
+    .filter(r => r.consented === true && (r.text || '').trim())
+    .map(r => ({
+      created_at: r.at || new Date().toISOString(),
+      rating: r.rating || 0,
+      text: r.text,
+      useful: r.useful || null,
+      name: r.name || null,
+      role: r.role || null,
+      county: r.county || null,
+      consented: true,
+    }));
+
+  if(!toMigrate.length){
+    localStorage.removeItem(OLD_REVIEWS_KEY);
+    localStorage.setItem(REVIEWS_MIGRATED_KEY, '1');
+    return;
+  }
+
+  const { error } = await sb.from('reviews').insert(toMigrate);
+  if(error){
+    console.warn('Review migration failed, will retry next visit:', error.message);
+    return; // leave old data in place — try again next time this browser loads the page
+  }
+
+  localStorage.removeItem(OLD_REVIEWS_KEY);
+  localStorage.setItem(REVIEWS_MIGRATED_KEY, '1');
+  showToast(`Moved ${toMigrate.length} saved review${toMigrate.length > 1 ? 's' : ''} to the shared backend ✓`);
+  renderReviews();
+}
+
 renderChips();
 renderStageInfo();
 renderFoodLibrary();
@@ -1574,6 +1694,7 @@ renderHelpfulWidget('helpful-pairing', 'pairing');
 renderHelpfulWidget('helpful-library', 'library');
 renderStarPicker();
 renderReviews();
+migrateLocalReviewsToSupabase();
 regenerate();
 </script>
 </body>
