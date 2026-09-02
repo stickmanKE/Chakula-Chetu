@@ -21,6 +21,8 @@
     --sukuma-light:#4C7059;
     --ndengu:#7FA84F;
     --sweet-potato:#E0762C;
+    --sweet-potato-deep:#AE5619;
+    --sweet-potato-text:#A84D18;
     --egg-yolk:#F0A93A;
     --berry:#B85C6B;
     --iron:#8A2E3A;
@@ -31,7 +33,7 @@
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   body{ margin:0; background:var(--cream); color:var(--ink); font-family:'Work Sans', sans-serif; -webkit-font-smoothing:antialiased;}
-  h1,h2,h3,.display{ font-family:'Fraunces', serif; font-weight:600; letter-spacing:-0.01em;}
+  h1,h2,h3,h4,.display{ font-family:'Fraunces', serif; font-weight:600; letter-spacing:-0.01em;}
   .mono{ font-family:'JetBrains Mono', monospace; letter-spacing:0.02em;}
 
   .weave{
@@ -76,7 +78,7 @@
   .age-card .label{ font-size:0.72rem; opacity:0.8; margin-top:0.15rem; display:block;}
 
   .btn-primary{
-    background:var(--sweet-potato); color:#fff; border:none; border-radius:12px; padding:0.85rem 1.5rem;
+    background:var(--sweet-potato-deep); color:#fff; border:none; border-radius:12px; padding:0.85rem 1.5rem;
     font-weight:600; font-size:0.95rem; cursor:pointer; box-shadow:0 6px 16px rgba(224,118,44,0.35);
     transition:transform .15s ease, box-shadow .15s ease; min-height:44px;
   }
@@ -98,14 +100,37 @@
   }
   .btn-solid-light:hover{ transform:translateY(-1px);}
 
+  .btn-subtle{
+    background:transparent; border:none; color:var(--sukuma-light); border-radius:10px;
+    padding:0.55rem 0.7rem; font-weight:600; font-size:0.82rem; cursor:pointer;
+    text-decoration:underline; text-underline-offset:3px; text-decoration-color:transparent;
+    transition:text-decoration-color .15s ease; min-height:44px;
+  }
+  .btn-subtle:hover{ text-decoration-color:var(--sukuma-light);}
+
   :focus-visible{ outline:2px solid var(--sweet-potato); outline-offset:2px; border-radius:4px;}
   .age-card:focus-visible{ outline-offset:3px;}
 
   .day-card{
     background:#fff; border-radius:16px; border:1px solid var(--line); overflow:hidden;
     opacity:0; transform:translateY(14px); animation:riseIn .45s ease forwards;
-    box-shadow:0 2px 10px rgba(43,38,32,0.05);
+    box-shadow:0 2px 10px rgba(43,38,32,0.05); scroll-margin-top:64px;
   }
+
+  /* Mobile-only day jump strip — the multi-column grid at sm+ already
+     makes every day visible at a glance, so this is hidden there. */
+  .day-quicknav{
+    display:flex; gap:0.4rem; overflow-x:auto; margin-bottom:0.75rem; padding-bottom:0.2rem;
+    scrollbar-width:none;
+  }
+  .day-quicknav::-webkit-scrollbar{ display:none;}
+  .day-quicknav button{
+    flex:0 0 auto; border:1.5px solid var(--line); background:#fff; color:var(--ink);
+    border-radius:999px; padding:0.4rem 0.85rem; font-size:0.78rem; font-weight:600;
+    cursor:pointer; min-height:38px;
+  }
+  .day-quicknav button:hover{ border-color:var(--sukuma);}
+  @media (min-width:640px){ .day-quicknav{ display:none;} }
   @keyframes riseIn{ to{opacity:1; transform:translateY(0);} }
   @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.45;} }
   .pulsing{ animation:pulse 1s ease infinite;}
@@ -133,10 +158,25 @@
 
   ::selection{ background:var(--egg-yolk); color:var(--ink);}
 
+  .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto;}
+    .day-card{ animation:none; opacity:1; transform:none;}
+    .pulsing{ animation:none;}
+    .age-card, .btn-primary, .btn-solid-light{ transition:none;}
+  }
+
+  .print-only{ display:none;}
+
   @media print{
-    header.hero, nav.subnav, .no-print{ display:none !important;}
+    header.hero, nav.subnav, .no-print,
+    #saved, #pairing, #library, #cues, #watch, #guidance,
+    #reviews, #faq, #about, footer,
+    .fb-strip, .helpful-widget{ display:none !important;}
     body{ background:#fff; padding-bottom:0 !important;}
     .day-card{ break-inside:avoid; box-shadow:none;}
+    .print-only{ display:block !important;}
   }
 
   .cue-list li, .rule-list li{ padding-left:1.4rem; position:relative; margin-bottom:0.55rem; line-height:1.5;}
@@ -466,18 +506,19 @@
     </p>
     <p class="mono text-xs opacity-70 mb-2">TAP AN AGE TO START</p>
     <div class="age-grid" id="age-chips"></div>
+    <p class="text-xs opacity-70 mt-3" style="max-width:520px;">Picking a stage builds your first week automatically below — tap <strong>Generate my week</strong> any time after that for a fresh set of meals.</p>
   </div>
 </header>
 
 <nav class="subnav no-print">
   <div class="max-w-5xl mx-auto subnav-inner">
     <a href="#planner">Planner</a>
-    <a href="#saved">Saved plans</a>
-    <a href="#pairing">Smart pairing</a>
-    <a href="#library">Food library</a>
-    <a href="#cues">Hunger cues</a>
-    <a href="#watch">Growth watch</a>
-    <a href="#guidance">Golden rules</a>
+    <a href="#saved">Saved</a>
+    <a href="#pairing">Pairing</a>
+    <a href="#library">Foods</a>
+    <a href="#cues">Cues</a>
+    <a href="#watch">Growth</a>
+    <a href="#guidance">Rules</a>
     <a href="#reviews">Reviews</a>
     <a href="#about">About</a>
     <a href="#faq">FAQ</a>
@@ -485,6 +526,8 @@
 </nav>
 
 <main class="max-w-5xl mx-auto px-5 sm:px-6 pb-16">
+
+  <p class="print-only mono" style="font-weight:700; font-size:0.85rem; letter-spacing:0.08em; margin-bottom:0.75rem;">CHAKULA CHETU — WEANING PLAN</p>
 
   <!-- Generator panel -->
   <section id="planner" class="bg-white rounded-2xl border shadow-sm p-5 sm:p-8 mt-6 sm:mt-8 scroll-mt-16" style="border-color:var(--line);">
@@ -494,17 +537,21 @@
         <h2 class="text-2xl md:text-3xl" id="stage-title">5–6 months</h2>
         <p class="text-sm mt-1 opacity-70 max-w-md" id="stage-desc"></p>
       </div>
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-2 no-print">
         <button class="btn-primary" id="generate-btn">Generate my week →</button>
       </div>
     </div>
 
     <div class="grid sm:grid-cols-3 gap-3 mt-6" id="golden-strip"></div>
+
+    <p class="text-xs opacity-70 mt-4 pt-4 no-print" style="border-top:1px dashed var(--line);">
+      <span aria-hidden="true">🍽️</span> We don't randomise meals — lunches and dinners pair iron with vitamin C, and vitamin A with healthy fat, on purpose. <a href="#pairing" style="color:var(--sukuma); font-weight:600;">See how it works →</a>
+    </p>
   </section>
 
   <!-- Digestion tip -->
   <section class="mt-5 sm:mt-6 rounded-2xl p-4 sm:p-5 flex items-start gap-4" style="background:var(--millet); border:1px solid var(--line);">
-    <div class="text-2xl">🌿</div>
+    <div class="text-2xl" aria-hidden="true">🌿</div>
     <div>
       <p class="section-title mb-1">Digestion tip</p>
       <p class="text-sm leading-relaxed" id="digestion-tip" style="max-width:640px;"></p>
@@ -514,48 +561,53 @@
   <!-- Plan grid -->
   <section class="mt-8 sm:mt-10">
     <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
-      <h3 class="text-xl">This week's plan</h3>
-      <div class="flex flex-wrap gap-2 no-print">
-        <button class="btn-ghost" id="save-btn">💾 Save plan</button>
-        <button class="btn-ghost" id="calendar-btn">📅 Add to calendar</button>
-        <button class="btn-ghost" id="whatsapp-btn">💬 WhatsApp</button>
-        <button class="btn-ghost" id="copy-btn">Copy text</button>
-        <button class="btn-ghost" id="print-btn">Print / PDF</button>
+      <h2 class="text-xl">This week's plan</h2>
+      <div class="flex flex-wrap items-center gap-2 no-print">
+        <button class="btn-solid-light" id="save-btn"><span aria-hidden="true">💾</span> Save plan</button>
+        <button class="btn-ghost" id="whatsapp-btn"><span aria-hidden="true">💬</span> WhatsApp</button>
+        <button class="btn-ghost" id="calendar-btn"><span aria-hidden="true">📅</span> Add to calendar</button>
+        <button class="btn-subtle" id="copy-btn">Copy text</button>
+        <button class="btn-subtle" id="print-btn">Print / PDF</button>
       </div>
     </div>
+    <p id="plan-status" class="sr-only" role="status" aria-live="polite"></p>
+    <div id="day-quicknav" class="day-quicknav no-print" role="group" aria-label="Jump to a day"></div>
     <div id="plan-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     <div id="plan-feedback"></div>
+    <p class="print-only text-xs" style="margin-top:1rem; padding-top:1rem; border-top:1px dashed var(--line);">
+      Chakula Chetu — built for Kenyan families and the caregivers who feed them. General guidance only; always follow your clinic's advice for your baby.
+    </p>
   </section>
 
   <!-- Saved plans -->
   <section id="saved" class="mt-14 sm:mt-16 scroll-mt-16">
-    <p class="eyebrow mb-2" style="color:var(--sweet-potato);">On this device</p>
-    <h3 class="text-xl mb-1">My saved plans</h3>
+    <p class="eyebrow mb-2" style="color:var(--sweet-potato-text);">On this device</p>
+    <h2 class="text-xl mb-1">My saved plans</h2>
     <p class="text-sm opacity-70 mb-4" id="saved-empty-note">Saved plans live in this browser, so they're here whenever you come back on this phone or computer.</p>
     <div class="space-y-2" id="saved-list"></div>
   </section>
 
   <!-- Smart pairing explainer -->
   <section id="pairing" class="mt-14 sm:mt-16 scroll-mt-16">
-    <p class="eyebrow mb-2" style="color:var(--sweet-potato);">The science, simply</p>
-    <h3 class="text-2xl mb-2">Why some foods are paired on purpose</h3>
+    <p class="eyebrow mb-2" style="color:var(--sweet-potato-text);">The science, simply</p>
+    <h2 class="text-2xl mb-2">Why some foods are paired on purpose</h2>
     <p class="text-sm opacity-70 mb-6 max-w-xl">Every lunch and dinner in the planner quietly follows these two rules, and tracks iron-rich foods across the week so they don't get crowded out.</p>
     <div class="grid md:grid-cols-2 gap-5">
       <div class="rounded-2xl p-6 border" style="border-color:var(--line); background:#fff;">
         <span class="flag-dot flag-iron mb-3 inline-block">IRON + VITAMIN C</span>
-        <h4 class="text-lg mb-2">Vitamin C helps iron absorb</h4>
+        <h3 class="text-lg mb-2">Vitamin C helps iron absorb</h3>
         <p class="text-sm opacity-80 leading-relaxed">Iron-rich foods — egg yolk, liver, minced meat, ndengu, lentils, beans — are absorbed far better alongside a vitamin-C food in the same meal, like spinach, tomato, or sukuma wiki. The planner aims for iron at lunch on most days of the week, not just whenever it happens to land.</p>
       </div>
       <div class="rounded-2xl p-6 border" style="border-color:var(--line); background:#fff;">
         <span class="flag-dot flag-fat mb-3 inline-block">FAT + VITAMIN A</span>
-        <h4 class="text-lg mb-2">Fat helps vitamin A absorb</h4>
+        <h3 class="text-lg mb-2">Fat helps vitamin A absorb</h3>
         <p class="text-sm opacity-80 leading-relaxed">Vitamin-A foods — pumpkin, butternut, carrot, sweet potato — are fat-soluble, meaning a spoon of avocado, natural yogurt or a little groundnut paste alongside them helps baby actually absorb the vitamin, not just taste it.</p>
       </div>
     </div>
     <div id="helpful-pairing"></div>
   </section>
   <section id="library" class="mt-14 sm:mt-16 scroll-mt-16">
-    <h3 class="text-xl mb-1">Foods for this stage</h3>
+    <h2 class="text-xl mb-1">Foods for this stage</h2>
     <p class="text-sm opacity-70 mb-5">Grouped the way a nutritionist groups them. Swap freely within a group — <span class="flag-dot flag-iron">IRON</span><span class="flag-dot flag-vitc">VIT C</span><span class="flag-dot flag-vita">VIT A</span><span class="flag-dot flag-fat">FAT</span> show what each food boosts.</p>
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6" id="food-library"></div>
     <div id="helpful-library"></div>
@@ -564,8 +616,8 @@
   <!-- Hunger cues -->
   <section id="cues" class="mt-14 sm:mt-16 scroll-mt-16 grid md:grid-cols-2 gap-6">
     <div class="rounded-2xl p-6 border" style="border-color:var(--line); background:#fff;">
-      <p class="eyebrow mb-2" style="color:var(--sweet-potato);">Responsive feeding</p>
-      <h3 class="text-xl mb-3">Signs baby is hungry</h3>
+      <p class="eyebrow mb-2" style="color:var(--sweet-potato-text);">Responsive feeding</p>
+      <h2 class="text-xl mb-3">Signs baby is hungry</h2>
       <ul class="text-sm cue-list opacity-90">
         <li>Opens mouth or moves toward the spoon</li>
         <li>Smacks lips, sucks on fists or fingers</li>
@@ -576,8 +628,8 @@
       <p class="text-xs opacity-60 mt-3">Feed only when baby shows these cues — it gives time to digest and keeps mealtimes pressure-free.</p>
     </div>
     <div class="rounded-2xl p-6 border" style="border-color:var(--line); background:#fff;">
-      <p class="eyebrow mb-2" style="color:var(--sweet-potato);">Responsive feeding</p>
-      <h3 class="text-xl mb-3">Signs baby is full</h3>
+      <p class="eyebrow mb-2" style="color:var(--sweet-potato-text);">Responsive feeding</p>
+      <h2 class="text-xl mb-3">Signs baby is full</h2>
       <ul class="text-sm cue-list opacity-90">
         <li>Turns head away or closes mouth</li>
         <li>Pushes the spoon or bowl away</li>
@@ -591,8 +643,8 @@
 
   <!-- Growth / nutrition watch -->
   <section id="watch" class="mt-14 sm:mt-16 scroll-mt-16">
-    <p class="eyebrow mb-2" style="color:var(--sweet-potato);">For caregivers & nurses</p>
-    <h3 class="text-2xl mb-2">What poor nutrition can look like</h3>
+    <p class="eyebrow mb-2" style="color:var(--sweet-potato-text);">For caregivers & nurses</p>
+    <h2 class="text-2xl mb-2">What poor nutrition can look like</h2>
     <p class="text-sm opacity-70 mb-6 max-w-xl">General education, not a diagnosis — if you notice any of these, it's worth a clinic visit rather than waiting.</p>
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" id="watch-grid"></div>
   </section>
@@ -601,7 +653,7 @@
   <section id="guidance" class="mt-14 sm:mt-16 scroll-mt-16 grid md:grid-cols-2 gap-6">
     <div class="rounded-2xl p-6" style="background:var(--sukuma); color:var(--cream);">
       <p class="eyebrow mb-2">Golden rules</p>
-      <h3 class="text-xl mb-3">Introducing new foods safely</h3>
+      <h2 class="text-xl mb-3">Introducing new foods safely</h2>
       <ul class="text-sm rule-list opacity-95">
         <li>Start with 1–2 tablespoons, once a day, for the first 2–3 days.</li>
         <li>Introduce one new food at a time, and wait 2–3 days before the next — this makes it easy to spot any reaction.</li>
@@ -614,8 +666,8 @@
       </ul>
     </div>
     <div class="rounded-2xl p-6 border" style="border-color:var(--line);">
-      <p class="eyebrow mb-2" style="color:var(--sweet-potato);">Golden rules</p>
-      <h3 class="text-xl mb-3">If baby's tummy is unsettled</h3>
+      <p class="eyebrow mb-2" style="color:var(--sweet-potato-text);">Golden rules</p>
+      <h2 class="text-xl mb-3">If baby's tummy is unsettled</h2>
       <ul class="text-sm rule-list opacity-85">
         <li><strong>Constipated?</strong> Mashed banana + avocado with a spoon of natural yogurt, plain wimbi porridge, and butternut can help gently.</li>
         <li><strong>Loose stools?</strong> Ripe banana, plain rice, and well-cooked carrot are gentle and binding.</li>
@@ -629,18 +681,18 @@
 
   <!-- Reviews -->
   <section id="reviews" class="mt-14 sm:mt-16 scroll-mt-16">
-    <p class="eyebrow mb-2" style="color:var(--sweet-potato);">What parents & caregivers say</p>
-    <h3 class="text-2xl mb-2">How Chakula Chetu helps families</h3>
+    <p class="eyebrow mb-2" style="color:var(--sweet-potato-text);">What parents & caregivers say</p>
+    <h2 class="text-2xl mb-2">How Chakula Chetu helps families</h2>
     <p class="text-sm opacity-70 mb-6 max-w-xl">Reviews only appear here if the person who wrote them chose to share it publicly. This is feedback about the app, not medical advice — for anything about your baby's health, talk to your paediatrician or clinic.</p>
 
     <div id="reviews-list" class="grid sm:grid-cols-2 gap-4 mb-8"></div>
 
     <div class="rounded-2xl border p-5 sm:p-6" style="border-color:var(--line); background:#fff;">
-      <h4 class="text-lg mb-1">How has Chakula Chetu helped you when planning or feeding your baby?</h4>
+      <h3 class="text-lg mb-1">How has Chakula Chetu helped you when planning or feeding your baby?</h3>
       <p class="text-sm opacity-70 mb-4">Takes about a minute. Every field except your review is optional.</p>
 
       <label class="field-label">Your rating</label>
-      <div class="star-row" id="review-stars"></div>
+      <div class="star-row" id="review-stars" role="group" aria-label="Your rating, out of 5 stars"></div>
 
       <label class="field-label" for="review-text">Your review</label>
       <textarea class="form-input" id="review-text" placeholder="e.g. Made planning our 7-month-old's week so much easier, especially the iron pairing tips..."></textarea>
@@ -683,7 +735,7 @@
 
   <!-- FAQ -->
   <section id="faq" class="mt-14 sm:mt-16 scroll-mt-16">
-    <h3 class="text-2xl mb-4">Common questions</h3>
+    <h2 class="text-2xl mb-4">Common questions</h2>
     <div id="faq-list"></div>
   </section>
 
@@ -695,7 +747,7 @@
         <div class="about-inner">
           <div class="about-avatar" aria-hidden="true">MM</div>
           <p class="eyebrow mb-2">The story behind Chakula Chetu</p>
-          <h3 class="text-2xl md:text-3xl mb-4">Hi, I'm Mark Mgharo 👋</h3>
+          <h2 class="text-2xl md:text-3xl mb-4">Hi, I'm Mark Mgharo 👋</h2>
           <p class="about-text">
             I'm a tech enthusiast, and I built Chakula Chetu after a year of trial and error trying to figure out what actually worked for my own baby — who just turned one. So much of what I found online wasn't written for Kenyan kitchens, Kenyan foods, or the questions a Kenyan parent actually has at 6pm with a hungry baby and half an avocado.
           </p>
@@ -711,7 +763,7 @@
 
     <div class="grid sm:grid-cols-2 gap-4 mt-5">
       <div class="support-card">
-        <div class="support-icon">💚</div>
+        <div class="support-icon" aria-hidden="true">💚</div>
         <p class="font-semibold mb-1">Support the project</p>
         <p class="text-sm opacity-70 mb-4">Chakula Chetu is free and independently built. If it's helped your family, a donation helps keep it running and fund new features.</p>
         <div class="mpesa-row">
@@ -723,7 +775,7 @@
         </div>
       </div>
       <div class="support-card">
-        <div class="support-icon">💬</div>
+        <div class="support-icon" aria-hidden="true">💬</div>
         <p class="font-semibold mb-1">Got ideas or feedback?</p>
         <p class="text-sm opacity-70 mb-4">I read everything that comes in through the feedback button — but if you'd rather just chat, message me directly on WhatsApp about what you'd like to see next.</p>
         <a class="btn-solid-light" href="https://wa.me/254741392650?text=Hi%20Mark!%20I've%20been%20using%20Chakula%20Chetu%20and%20wanted%20to%20say..." target="_blank" rel="noopener" style="text-decoration:none; justify-content:center; display:inline-flex; width:100%;">
@@ -740,28 +792,28 @@
 
 <!-- Sticky mobile action bar -->
 <div class="mobile-bar no-print" id="mobile-bar">
-  <button id="mb-generate" style="background:var(--sweet-potato); color:#fff;">
-    <span style="font-size:1rem;">✨</span><span>Generate</span>
+  <button id="mb-generate" style="background:var(--sweet-potato-deep); color:#fff;">
+    <span style="font-size:1rem;" aria-hidden="true">✨</span><span>Generate</span>
   </button>
   <button id="mb-save" style="background:var(--sukuma); color:var(--cream);">
-    <span style="font-size:1rem;">💾</span><span>Save</span>
+    <span style="font-size:1rem;" aria-hidden="true">💾</span><span>Save</span>
   </button>
   <button id="mb-calendar" style="background:var(--millet); color:var(--ink);">
-    <span style="font-size:1rem;">📅</span><span>Calendar</span>
+    <span style="font-size:1rem;" aria-hidden="true">📅</span><span>Calendar</span>
   </button>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <button class="fab-feedback no-print" id="fab-feedback" aria-label="Give feedback about Chakula Chetu">
-  💬 <span>Feedback</span>
+  <span aria-hidden="true">💬</span> <span>Feedback</span>
 </button>
 
 <div class="modal-overlay" id="feedback-modal">
-  <div class="modal-sheet">
+  <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title" tabindex="-1">
     <div class="modal-head">
       <div>
-        <h3 class="text-xl">How are we doing?</h3>
+        <h3 class="text-xl" id="feedback-modal-title">How are we doing?</h3>
         <p class="text-sm opacity-70 mt-1">Short and anonymous — helps us make Chakula Chetu more useful.</p>
       </div>
       <button class="modal-close" id="modal-close-btn" aria-label="Close feedback form">✕</button>
@@ -778,10 +830,10 @@
 
     <label class="field-label">How are we doing overall?</label>
     <div class="chip-row" id="fb-mood-chips">
-      <button class="chip-choice" data-mood="Love it">😍 Love it</button>
-      <button class="chip-choice" data-mood="It's useful">🙂 It's useful</button>
-      <button class="chip-choice" data-mood="It's okay">😐 It's okay</button>
-      <button class="chip-choice" data-mood="Needs work">😕 Needs work</button>
+      <button class="chip-choice" data-mood="Love it"><span aria-hidden="true">😍</span> Love it</button>
+      <button class="chip-choice" data-mood="It's useful"><span aria-hidden="true">🙂</span> It's useful</button>
+      <button class="chip-choice" data-mood="It's okay"><span aria-hidden="true">😐</span> It's okay</button>
+      <button class="chip-choice" data-mood="Needs work"><span aria-hidden="true">😕</span> Needs work</button>
     </div>
 
     <label class="field-label" for="fb-improve">What should we improve?</label>
@@ -1030,7 +1082,7 @@ function generatePlan(stage){
 function renderChips(){
   const wrap = document.getElementById('age-chips');
   wrap.innerHTML = STAGES.map((s,i)=>`
-    <button class="age-card ${i===currentStageIndex?'active':''}" data-index="${i}">
+    <button class="age-card ${i===currentStageIndex?'active':''}" data-index="${i}" aria-pressed="${i===currentStageIndex}">
       <span class="range">${s.range}</span>
       <span class="label">${s.label}</span>
     </button>
@@ -1103,7 +1155,7 @@ function mealTags(items){
 function renderPlan(plan){
   const grid = document.getElementById('plan-grid');
   grid.innerHTML = plan.map((d, idx)=>`
-    <div class="day-card" style="animation-delay:${idx*0.06}s">
+    <div class="day-card" id="day-card-${idx}" style="animation-delay:${idx*0.06}s">
       <div class="day-head">
         <span class="day-num">DAY ${idx+1}</span>
         <span class="font-semibold text-sm">${d.day}</span>
@@ -1126,12 +1178,25 @@ function renderPlan(plan){
       </div>
     </div>
   `).join('');
+  renderDayQuickNav(plan);
+}
+
+function renderDayQuickNav(plan){
+  const nav = document.getElementById('day-quicknav');
+  if(!nav) return;
+  nav.innerHTML = plan.map((d, idx)=>`<button type="button" data-day="${idx}">${d.day.slice(0,3)}</button>`).join('');
+  nav.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const card = document.getElementById('day-card-' + btn.dataset.day);
+      if(card) card.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'start'});
+    });
+  });
 }
 
 function renderWatchGrid(){
   document.getElementById('watch-grid').innerHTML = WATCH_ITEMS.map(w=>`
     <div class="watch-card">
-      <p class="font-semibold mb-1"><span class="dot" style="background:${w.color}"></span>${w.title}</p>
+      <p class="font-semibold mb-1"><span class="dot" aria-hidden="true" style="background:${w.color}"></span>${w.title}</p>
       <p class="text-sm opacity-75 leading-relaxed">${w.text}</p>
     </div>
   `).join('');
@@ -1169,7 +1234,13 @@ function regenerate(){
     btn.disabled = false;
     btn.textContent = originalText;
     renderPlanFeedback();
+    announcePlanReady();
   }, 280);
+}
+
+function announcePlanReady(){
+  const status = document.getElementById('plan-status');
+  if(status) status.textContent = 'Your ' + STAGES[currentStageIndex].range + ' plan is ready — 7 days of meals below.';
 }
 
 /* ---------------------------------------------------------------
@@ -1194,7 +1265,8 @@ function getSavedPlans(){
   }catch(e){ return []; }
 }
 function setSavedPlans(list){
-  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(list)); }catch(e){ /* storage unavailable */ }
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(list)); return true; }
+  catch(e){ return false; /* storage unavailable — e.g. private browsing */ }
 }
 function savePlan(){
   const list = getSavedPlans();
@@ -1207,9 +1279,13 @@ function savePlan(){
     plan: currentPlan,
   };
   list.unshift(entry);
-  setSavedPlans(list.slice(0, 12)); // keep it tidy
+  const ok = setSavedPlans(list.slice(0, 12)); // keep it tidy
   renderSavedList();
-  showToast('Plan saved on this device ✓');
+  if(ok){
+    showToast('Plan saved on this device ✓');
+  }else{
+    showToast("Couldn't save — try WhatsApp or Print to keep this plan instead");
+  }
 }
 function deletePlan(id){
   setSavedPlans(getSavedPlans().filter(p => p.id !== id));
@@ -1222,6 +1298,7 @@ function loadPlan(id){
   currentPlan = found.plan;
   renderChips(); renderStageInfo(); renderFoodLibrary(); renderPlan(currentPlan);
   document.getElementById('planner').scrollIntoView({behavior:'smooth', block:'start'});
+  announcePlanReady();
   showToast('Loaded saved plan ✓');
 }
 function formatSavedDate(iso){
@@ -1329,7 +1406,7 @@ function shareWhatsApp(){
   const stage = STAGES[currentStageIndex];
   const text = planToText(stage, currentPlan);
   const url = 'https://wa.me/?text=' + encodeURIComponent(text);
-  window.open(url, '_blank');
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 /* ---------------------------------------------------------------
@@ -1430,8 +1507,14 @@ function renderHelpfulWidget(hostId, sectionName){
 /* ---- Floating feedback modal ---- */
 let fbSelectedRole = getSavedRole();
 let fbSelectedMood = '';
+let fbLastFocused = null;
 
+function getFocusable(container){
+  return Array.from(container.querySelectorAll('a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'))
+    .filter(el => el.offsetParent !== null);
+}
 function openFeedbackModal(){
+  fbLastFocused = document.activeElement;
   document.getElementById('feedback-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
   if(fbSelectedRole){
@@ -1439,15 +1522,30 @@ function openFeedbackModal(){
       c.classList.toggle('picked', c.dataset.role === fbSelectedRole);
     });
   }
+  const sheet = document.querySelector('#feedback-modal .modal-sheet');
+  const focusables = getFocusable(sheet);
+  (focusables[0] || sheet).focus();
 }
 function closeFeedbackModal(){
   document.getElementById('feedback-modal').classList.remove('open');
   document.body.style.overflow = '';
+  if(fbLastFocused && typeof fbLastFocused.focus === 'function') fbLastFocused.focus();
 }
 document.getElementById('fab-feedback').addEventListener('click', openFeedbackModal);
 document.getElementById('modal-close-btn').addEventListener('click', closeFeedbackModal);
 document.getElementById('feedback-modal').addEventListener('click', (e)=>{
   if(e.target.id === 'feedback-modal') closeFeedbackModal();
+});
+document.getElementById('feedback-modal').addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape'){ closeFeedbackModal(); return; }
+  if(e.key === 'Tab'){
+    const sheet = document.querySelector('#feedback-modal .modal-sheet');
+    const focusables = getFocusable(sheet);
+    if(!focusables.length) return;
+    const first = focusables[0], last = focusables[focusables.length - 1];
+    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
 });
 document.querySelectorAll('#fb-role-chips .chip-choice').forEach(chip=>{
   chip.addEventListener('click', ()=>{
@@ -1485,11 +1583,15 @@ document.getElementById('fb-submit').addEventListener('click', ()=>{
 let reviewRating = 0;
 function renderStarPicker(){
   const wrap = document.getElementById('review-stars');
-  wrap.innerHTML = [1,2,3,4,5].map(n=>`<button type="button" class="star-btn" data-n="${n}" aria-label="${n} star${n>1?'s':''}">★</button>`).join('');
+  wrap.innerHTML = [1,2,3,4,5].map(n=>`<button type="button" class="star-btn" data-n="${n}" aria-label="${n} star${n>1?'s':''}" aria-pressed="false">★</button>`).join('');
   wrap.querySelectorAll('.star-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       reviewRating = parseInt(btn.dataset.n);
-      wrap.querySelectorAll('.star-btn').forEach(b=> b.classList.toggle('filled', parseInt(b.dataset.n) <= reviewRating));
+      wrap.querySelectorAll('.star-btn').forEach(b=>{
+        const filled = parseInt(b.dataset.n) <= reviewRating;
+        b.classList.toggle('filled', filled);
+        b.setAttribute('aria-pressed', String(filled));
+      });
     });
   });
 }
@@ -1609,8 +1711,11 @@ document.getElementById('review-submit').addEventListener('click', async ()=>{
 document.getElementById('generate-btn').addEventListener('click', regenerate);
 document.getElementById('print-btn').addEventListener('click', ()=>window.print());
 document.getElementById('copy-btn').addEventListener('click', ()=>{
+  if(!navigator.clipboard){ showToast("Copy isn't available here — try Print/PDF instead"); return; }
   navigator.clipboard.writeText(planToText(STAGES[currentStageIndex], currentPlan)).then(()=>{
     showToast('Plan copied to clipboard ✓');
+  }).catch(()=>{
+    showToast("Couldn't copy — try Print/PDF instead");
   });
 });
 document.getElementById('save-btn').addEventListener('click', savePlan);
@@ -1622,8 +1727,11 @@ document.getElementById('mb-save').addEventListener('click', savePlan);
 document.getElementById('mb-calendar').addEventListener('click', downloadICS);
 
 document.getElementById('copy-mpesa-btn').addEventListener('click', ()=>{
+  if(!navigator.clipboard){ showToast('Copy not available — number is +254 741 392 650'); return; }
   navigator.clipboard.writeText('0741392650').then(()=>{
     showToast('M-Pesa number copied ✓');
+  }).catch(()=>{
+    showToast('Copy not available — number is +254 741 392 650');
   });
 });
 
